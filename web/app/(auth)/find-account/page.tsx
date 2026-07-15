@@ -1,0 +1,47 @@
+import Link from "next/link";
+import { findAccount } from "@/lib/actions/auth";
+import { buttonPrimary, Card, ErrorBanner, inputClass } from "@/components/ui";
+
+export default async function FindAccountPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; sent?: string }>;
+}) {
+  const { error, sent } = await searchParams;
+
+  return (
+    <main className="mx-auto w-full max-w-sm px-6 py-16">
+      <div className="mb-8 text-center">
+        <Link href="/" className="text-4xl">🏡</Link>
+        <h1 className="mt-2 text-2xl font-bold">Find my account</h1>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          We&apos;ll email you your member name, family, and sign-in address.
+        </p>
+      </div>
+
+      <Card>
+        <ErrorBanner message={error} />
+        {sent ? (
+          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+            If that email is registered, your account details are on their way. (Locally, check{" "}
+            <code>web/outbox/</code>.)
+          </p>
+        ) : (
+          <form action={findAccount} className="space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium" htmlFor="email">Email</label>
+              <input id="email" name="email" type="email" required autoComplete="email" className={inputClass} />
+            </div>
+            <button type="submit" className={`${buttonPrimary} w-full`}>Email my account details</button>
+          </form>
+        )}
+      </Card>
+
+      <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <Link href="/login" className="font-semibold text-emerald-600 dark:text-emerald-400">
+          Back to sign in
+        </Link>
+      </p>
+    </main>
+  );
+}

@@ -1,0 +1,290 @@
+// SriBookKeeping schema — mirrors the iOS app's SwiftData models.
+//
+// SQLite for local development. To deploy on Postgres (e.g. Neon via Vercel
+// Marketplace): change `provider` to "postgresql", set DATABASE_URL, and run
+// `npx prisma migrate dev` to regenerate migrations.
+//
+// SQLite notes: no native enums (String constants in lib/types.ts are the
+// source of truth) and money is stored as integer cents.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Family {
+  id        String   @id @default(cuid())
+  name      String
+  // IANA timezone for schedule math (reminder hours, day boundaries) — the
+  // server may run in UTC, but chores are due in the family's day.
+  timezone  String   @default("America/New_York")
+  createdAt DateTime @default(now())
+
+  members   Member[]
+  chores    Chore[]
+  schedules Schedule[]
+  approvals ApprovalRequest[]
+  expenses  Expense[]
+  events    Event[]
+  payouts   Payout[]
+  auditLogs AuditLog[]
+}
+
+model Member {
+  id           String   @id @default(cuid())
+  familyId     String
+  family       Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  name         String
+  role         String   // PARENT | GUARDIAN | GRANDPARENT | CHILD (adults = all but CHILD)
+  isHead       Boolean  @default(false)
+  emoji        String   @default("🙂")
+  email        String?  @unique
+  passwordHash String?
+  // Balance-sheet report emails (requires email to be set).
+  reportFrequency  String    @default("MONTHLY") // NONE | DAILY | WEEKLY | MONTHLY | QUARTERLY | HALF_YEARLY | YEARLY
+  lastReportSentAt DateTime?
+  // Platform operator: can open /admin and impersonate members (all audited).
+  // Only settable directly in the database or via seed.
+  isPlatformAdmin  Boolean   @default(false)
+  // Bumped on every password change/reset — session tokens carry the version
+  // they were issued with, so old sessions die immediately.
+  tokenVersion     Int       @default(0)
+  // Durable brute-force lockout (survives restarts & multiple instances):
+  // consecutive failures lock the account for a cooldown; any success resets.
+  failedLogins     Int       @default(0)
+  lockedUntil      DateTime?
+  createdAt    DateTime @default(now())
+
+  choresCreated       Chore[]            @relation("ChoreCreatedBy")
+  assignments         Assignment[]       @relation("AssignmentAssignee")
+  assignmentsGiven    Assignment[]       @relation("AssignmentAssignedBy")
+  schedulesCreated    Schedule[]         @relation("ScheduleCreatedBy")
+  scheduleMemberships ScheduleAssignee[]
+  approvalsRequested  ApprovalRequest[]  @relation("ApprovalRequestedBy")
+  expenses            Expense[]
+  eventsCreated       Event[]            @relation("EventCreatedBy")
+  messages            Message[]
+  payoutsReceived     Payout[]           @relation("PayoutMember")
+  payoutsGiven        Payout[]           @relation("PayoutPaidBy")
+  resetTokens         PasswordResetToken[]
+}
+
+model Chore {
+  id          String   @id @default(cuid())
+  familyId    String
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  title       String
+  details     String   @default("")
+  amountCents Int
+  kind        String   // POOL | ONE_TIME
+  poolStatus  String   @default("ACTIVE") // PENDING_APPROVAL | ACTIVE | REJECTED | RETIRED
+  createdById String?
+  createdBy   Member?  @relation("ChoreCreatedBy", fields: [createdById], references: [id])
+  // Set when this chore is part of an event (e.g. birthday-surprise tasks).
+  // Members excluded from the event never see this chore.
+  eventId     String?
+  event       Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  // Soft delete (both-parent approved) so ledger history survives.
+  deletedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  assignments Assignment[]
+  schedules   Schedule[]
+  approvals   ApprovalRequest[]
+}
+
+model Assignment {
+  id               String    @id @default(cuid())
+  choreId          String
+  chore            Chore     @relation(fields: [choreId], references: [id], onDelete: Cascade)
+  // null assignee = an UNCLAIMED occurrence of an open schedule, waiting for
+  // someone to claim it (or to be auto-assigned near the due date).
+  assigneeId       String?
+  assignee         Member?   @relation("AssignmentAssignee", fields: [assigneeId], references: [id], onDelete: Cascade)
+  assignedById     String?
+  assignedBy       Member?   @relation("AssignmentAssignedBy", fields: [assignedById], references: [id])
+  scheduleId       String?
+  schedule         Schedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  dueDate          DateTime?
+  reminderHour     Int       @default(-1) // 0–23, or -1 for no reminder
+  status           String    @default("PENDING") // PENDING | COMPLETED | CANCELLED
+  completedAt      DateTime?
+  baseAmountCents  Int       // snapshot of chore amount at assignment time
+  extraAmountCents Int       @default(0)
+  extraReason      String    @default("")
+  extraStatus      String    @default("NONE") // NONE | PENDING | APPROVED | DENIED
+  claimRemindedAt  DateTime? // when the "claim this chore" reminder went out
+  autoAssigned     Boolean   @default(false)
+  // Photo proof captured when the chore is completed.
+  proofImage       String?
+  createdAt        DateTime  @default(now())
+
+  approvals ApprovalRequest[]
+}
+
+model Schedule {
+  id               String    @id @default(cuid())
+  familyId         String
+  family           Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  choreId          String
+  chore            Chore     @relation(fields: [choreId], references: [id], onDelete: Cascade)
+  recurrence       String    // DAILY | WEEKLY | MONTHLY
+  weekdays         String    @default("") // comma-separated 1–7 (1 = Sunday), weekly only
+  dayOfMonth       Int       @default(1)
+  reminderHour     Int       @default(18)
+  status           String    @default("PENDING_APPROVAL") // PENDING_APPROVAL | ACTIVE | REJECTED | PAUSED
+  createdById      String?
+  createdBy        Member?   @relation("ScheduleCreatedBy", fields: [createdById], references: [id])
+  approvedByIds    String    @default("") // comma-separated member ids
+  endDate          DateTime? // optional: no occurrences materialized after this
+  lastMaterialized DateTime?
+  createdAt        DateTime  @default(now())
+
+  assignees   ScheduleAssignee[] // empty = OPEN: anyone can claim each occurrence
+  approvals   ApprovalRequest[]
+  assignments Assignment[]
+}
+
+model ScheduleAssignee {
+  scheduleId String
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@id([scheduleId, memberId])
+}
+
+model ApprovalRequest {
+  id                  String      @id @default(cuid())
+  familyId            String
+  family              Family      @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  type                String      // POOL_CHORE | SCHEDULE | EXTRA_PAY | CHORE_EDIT | CHORE_DELETE | ASSIGNMENT_SKIP
+  status              String      @default("PENDING") // PENDING | APPROVED | REJECTED
+  note                String      @default("")
+  // JSON payload for proposals: chore edits {title?,details?,amountCents?},
+  // skip/reschedule {skip:true} or {newDueDate:ISO}.
+  payload             String      @default("")
+  requiresBothParents Boolean     @default(false)
+  approvedByIds       String      @default("") // comma-separated member ids
+  requestedById       String?
+  requestedBy         Member?     @relation("ApprovalRequestedBy", fields: [requestedById], references: [id])
+  choreId             String?
+  chore               Chore?      @relation(fields: [choreId], references: [id], onDelete: Cascade)
+  scheduleId          String?
+  schedule            Schedule?   @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  assignmentId        String?
+  assignment          Assignment? @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  decidedAt           DateTime?
+  createdAt           DateTime    @default(now())
+}
+
+// Family brainstorming: one event = one group chat, with optional members
+// excluded (surprise planning) and chores linked to the event.
+model Event {
+  id          String    @id @default(cuid())
+  familyId    String
+  family      Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  title       String
+  details     String    @default("")
+  eventDate   DateTime?
+  // Comma-separated member ids kept out of the surprise: they never see the
+  // event, its chat, or its linked chores.
+  excludedIds String    @default("")
+  // Once revealed, the whole event (chat, chores) is visible to everyone —
+  // including previously excluded members and members added later.
+  revealedAt  DateTime?
+  createdById String?
+  createdBy   Member?   @relation("EventCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+
+  messages Message[]
+  chores   Chore[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    Member?  @relation(fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([eventId, createdAt])
+}
+
+// Cash (or transfer) handed to a member — settles their balance.
+// balance = earned − spent − paid out.
+model Payout {
+  id          String   @id @default(cuid())
+  familyId    String
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memberId    String
+  member      Member   @relation("PayoutMember", fields: [memberId], references: [id], onDelete: Cascade)
+  paidById    String?
+  paidBy      Member?  @relation("PayoutPaidBy", fields: [paidById], references: [id])
+  amountCents Int
+  note        String   @default("")
+  createdAt   DateTime @default(now())
+}
+
+// Every mutating action in the family, for parent review (and admin).
+// impersonatorId records the platform admin actually driving, if any.
+model AuditLog {
+  id             String   @id @default(cuid())
+  familyId       String
+  family         Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  actorId        String?
+  actorName      String   @default("")
+  impersonatorId String?
+  action         String   // e.g. CHORE_CREATED, EXPENSE_EDITED, PAYOUT_RECORDED…
+  entityType     String   @default("")
+  entityId       String?
+  details        String   @default("") // JSON before/after or context
+  createdAt      DateTime @default(now())
+
+  @@index([familyId, createdAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  memberId  String
+  member    Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Notification {
+  id           String    @id @default(cuid())
+  familyId     String
+  memberId     String    // recipient
+  type         String    // CLAIM_REMINDER | AUTO_ASSIGNED | GENERAL
+  title        String
+  body         String
+  assignmentId String?
+  readAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([memberId, readAt])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  familyId    String
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memberId    String
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  title       String
+  amountCents Int
+  date        DateTime
+  category    String   @default("OTHER") // FOOD | CLOTHING | SCHOOL | ENTERTAINMENT | TOYS | OTHER
+  notes       String   @default("")
+  receiptPath String   // required bill photo (requirement 12)
+  createdAt   DateTime @default(now())
+}
