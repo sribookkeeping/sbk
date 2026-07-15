@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     where: { email },
     include: { family: { include: { members: true } } },
   });
+  if (member?.deactivatedAt) return apiError("This account is no longer active", 403);
   // Durable per-account lockout (survives restarts / multiple instances).
   if (member && isLockedOut(member)) return apiError(LOCKOUT_MESSAGE, 429);
 

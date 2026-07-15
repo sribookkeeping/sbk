@@ -155,8 +155,15 @@ async function memberFromPayload(payload: TokenPayload | null): Promise<SessionM
   // Session revocation: tokens issued before the last password change carry
   // an older version and stop working immediately.
   if (member.tokenVersion !== payload.tokenVersion) return null;
+  // A deactivated member is signed out everywhere.
+  if (member.deactivatedAt) return null;
   member.impersonatorId = payload.impersonatorId;
   return member;
+}
+
+/** Active (non-deactivated) members of the family — for pickers/assignment. */
+export function activeMembers(member: SessionMember) {
+  return member.family.members.filter((m) => !m.deactivatedAt);
 }
 
 /** Current member from the session cookie, or null. */
@@ -185,8 +192,9 @@ export async function getApiMember(request: Request): Promise<SessionMember | nu
 
 // MARK: roles
 
+/** Active parents — used for approval hints and last-parent guards. */
 export function parents(member: SessionMember) {
-  return member.family.members.filter((m) => m.role === "PARENT");
+  return member.family.members.filter((m) => m.role === "PARENT" && !m.deactivatedAt);
 }
 
 export function isParent(member: { role: string }): boolean {

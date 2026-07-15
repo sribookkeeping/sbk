@@ -43,10 +43,11 @@ the other instantly.
 | 25 | Surprise reveal | one click makes the whole event (chat, chores, history) visible to everyone — including members added later |
 | 26 | Schedule end dates + skip/reschedule | schedules stop after the end date; assignees request skip/reschedule, a parent accepts |
 | 27 | Family audit log + platform admin | every activity recorded for parents (`/audit`); platform admins impersonate any login, fully audited (`/admin`) |
-| 28 | Test suite | 40 vitest tests over the rules engine + security (races, revocation, timezones) (`cd web && npm test`) |
+| 28 | Test suite | 43 vitest tests over the rules engine + security (races, revocation, timezones) (`cd web && npm test`) |
 | 16 | Open schedules: claim → auto-assign | occurrences with no assignee notify the whole family to claim ~24h before due; unclaimed after 12h → auto-assigned to the member with the fewest open chores, everyone notified, take-over allowed (web + API; in-app notification bell) |
 | 17 | Periodic balance-sheet reports | emailed to each member's registered address on their chosen cadence (daily/weekly/monthly/quarterly/half-yearly/yearly, default monthly); on-demand view + "send now" on the Reports page; local dev writes emails to `web/outbox/` |
 | 18 | Family brainstorming events | one group chat per event, chores linked to the event, and optional member exclusion — excluded members never see the event, chat, or its chores (surprise-proof, enforced server-side) |
+| 29 | Member management | parents edit name/role/emoji, add a sign-in to a member, and remove/restore members; removal is a soft deactivation (history kept, sign-in revoked, excluded from new work and required approvals) with a last-active-parent guard; fully audited (web + API) |
 
 ## Run the website locally
 
@@ -81,7 +82,7 @@ Command Line Tools (the app is plain Swift/SwiftUI — no local database).
 
 ## Tests
 
-`cd web && npm test` — vitest suite (40 tests) covering the approval rules
+`cd web && npm test` — vitest suite (43 tests) covering the approval rules
 (pool chores, both-parent schedules/edits/deletes, extra pay, skip), ledger
 math incl. payouts, schedule recurrence/end-dates and the claim→auto-assign
 sweep, surprise-event exclusion + reveal, reset tokens, session revocation,

@@ -1,8 +1,14 @@
 import { requireMember, isParent } from "@/lib/auth";
 import { familyBalances, EMPTY_BALANCE } from "@/lib/ledger";
-import { addMember, setFamilyTimezone } from "@/lib/actions/family";
+import {
+  addMember,
+  setFamilyTimezone,
+  updateMember,
+  deactivateMember,
+  reactivateMember,
+} from "@/lib/actions/family";
 import { changePassword } from "@/lib/actions/auth";
-import { buttonSecondary } from "@/components/ui";
+import { buttonSecondary, buttonDanger } from "@/components/ui";
 import { recordPayout } from "@/lib/actions/payouts";
 import { db } from "@/lib/db";
 import { fmtDate, fmtMoney } from "@/lib/format";
@@ -20,10 +26,18 @@ import {
 export default async function FamilyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; paid?: string; pwd?: string; tz?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    paid?: string;
+    pwd?: string;
+    tz?: string;
+    updated?: string;
+    removed?: string;
+    restored?: string;
+  }>;
 }) {
   const member = await requireMember();
-  const { error, paid, pwd, tz } = await searchParams;
+  const { error, paid, pwd, tz, updated, removed, restored } = await searchParams;
   const timezones = Intl.supportedValuesOf("timeZone");
   const recentPayouts = await db.payout.findMany({
     where: { familyId: member.familyId },
@@ -39,39 +53,160 @@ export default async function FamilyPage({
     if (a.role !== b.role) return a.role === Role.PARENT ? -1 : 1;
     return a.createdAt.getTime() - b.createdAt.getTime();
   });
+  const active = sorted.filter((m) => !m.deactivatedAt);
+  const former = sorted.filter((m) => m.deactivatedAt);
 
   return (
     <>
       <h1 className="text-2xl font-bold">{member.family.name}</h1>
-      <div className="mt-4">
+      <div className="mt-4 space-y-2">
         <ErrorBanner message={error} />
+        {updated && (
+          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+            Member updated.
+          </p>
+        )}
+        {removed && (
+          <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+            Member removed — their history is kept, and they can no longer sign in.
+          </p>
+        )}
+        {restored && (
+          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+            Member restored.
+          </p>
+        )}
       </div>
 
       <SectionTitle>Members</SectionTitle>
       <Card>
         <ul className="divide-y divide-black/5 dark:divide-white/10">
-          {sorted.map((m) => {
+          {active.map((m) => {
             const balance = balances.get(m.id) ?? EMPTY_BALANCE;
             return (
-              <li key={m.id} className="flex items-center justify-between gap-3 py-3">
-                <div className="flex items-center gap-3">
-                  <Avatar emoji={m.emoji} isParent={m.role === Role.PARENT} size={40} />
-                  <div>
-                    <p className="font-medium">
-                      {m.name} {m.isHead && "👑"}
-                    </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {roleLabel(m.role)}
-                      {m.email ? ` · ${m.email}` : " · no sign-in yet"}
-                    </p>
+              <li key={m.id} className="py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar emoji={m.emoji} isParent={m.role === Role.PARENT} size={40} />
+                    <div>
+                      <p className="font-medium">
+                        {m.name} {m.isHead && "👑"}
+                      </p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {roleLabel(m.role)}
+                        {m.email ? ` · ${m.email}` : " · no sign-in yet"}
+                      </p>
+                    </div>
                   </div>
+                  <Money cents={balance.balanceCents} />
                 </div>
-                <Money cents={balance.balanceCents} />
+
+                {parent && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      Edit
+                    </summary>
+                    <form
+                      action={updateMember.bind(null, m.id)}
+                      className="mt-3 grid gap-3 sm:grid-cols-2"
+                    >
+                      <div>
+                        <label className="mb-1 block text-xs font-medium">Name</label>
+                        <input name="name" defaultValue={m.name} required className={inputClass} />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium">Emoji</label>
+                        <input name="emoji" defaultValue={m.emoji} maxLength={4} className={inputClass} />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium">Role</label>
+                        <select name="role" defaultValue={m.role} className={inputClass}>
+                          {ROLE_OPTIONS.map((r) => (
+                            <option key={r.value} value={r.value}>
+                              {r.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium">
+                          {m.email ? "Email" : "Add email (optional)"}
+                        </label>
+                        <input
+                          name="email"
+                          type="email"
+                          defaultValue={m.email ?? ""}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="mb-1 block text-xs font-medium">
+                          {m.email ? "New password (optional)" : "Password (with email, gives a sign-in)"}
+                        </label>
+                        <input
+                          name="password"
+                          type="password"
+                          autoComplete="new-password"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="flex items-center gap-3 sm:col-span-2">
+                        <button type="submit" className={buttonSecondary}>
+                          Save changes
+                        </button>
+                        {m.id !== member.id && (
+                          <button
+                            formAction={deactivateMember.bind(null, m.id)}
+                            className={buttonDanger}
+                          >
+                            Remove from family
+                          </button>
+                        )}
+                      </div>
+                    </form>
+                  </details>
+                )}
               </li>
             );
           })}
         </ul>
       </Card>
+
+      {former.length > 0 && (
+        <>
+          <SectionTitle>Former members</SectionTitle>
+          <Card>
+            <ul className="divide-y divide-black/5 dark:divide-white/10">
+              {former.map((m) => {
+                const balance = balances.get(m.id) ?? EMPTY_BALANCE;
+                return (
+                  <li key={m.id} className="flex items-center justify-between gap-3 py-3 opacity-70">
+                    <div className="flex items-center gap-3">
+                      <Avatar emoji={m.emoji} isParent={m.role === Role.PARENT} size={36} />
+                      <div>
+                        <p className="font-medium line-through">{m.name}</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                          {roleLabel(m.role)} · removed
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Money cents={balance.balanceCents} />
+                      {parent && (
+                        <form action={reactivateMember.bind(null, m.id)}>
+                          <button className="text-xs font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+                            Restore
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        </>
+      )}
 
       <SectionTitle>My account</SectionTitle>
       <Card>

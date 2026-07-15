@@ -9,7 +9,7 @@ export default async function NewEventPage({
 }) {
   const member = await requireMember();
   const { error } = await searchParams;
-  const others = member.family.members.filter((m) => m.id !== member.id);
+  const others = member.family.members.filter((m) => m.id !== member.id && !m.deactivatedAt);
 
   return (
     <div className="mx-auto max-w-lg">

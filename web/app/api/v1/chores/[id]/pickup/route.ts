@@ -24,7 +24,9 @@ export const POST = withAuth<{ params: Promise<{ id: string }> }>(
       Array.isArray(body.assigneeIds) && body.assigneeIds.length > 0
         ? body.assigneeIds
         : [member.id];
-    const validAssignees = member.family.members.filter((m) => assigneeIds.includes(m.id));
+    const validAssignees = member.family.members.filter(
+      (m) => assigneeIds.includes(m.id) && !m.deactivatedAt,
+    );
     if (validAssignees.length === 0) return apiError("No valid assignees", 400);
 
     const created = await Promise.all(

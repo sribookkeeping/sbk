@@ -57,6 +57,10 @@ model Member {
   // consecutive failures lock the account for a cooldown; any success resets.
   failedLogins     Int       @default(0)
   lockedUntil      DateTime?
+  // Soft removal: a member who left the family. Their ledger history stays
+  // (reports/audit), but they can't sign in, be assigned work, or count as a
+  // required approver.
+  deactivatedAt    DateTime?
   createdAt    DateTime @default(now())
 
   choresCreated       Chore[]            @relation("ChoreCreatedBy")

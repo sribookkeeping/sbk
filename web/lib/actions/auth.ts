@@ -84,6 +84,7 @@ export async function login(formData: FormData) {
   }
 
   const member = await db.member.findUnique({ where: { email } });
+  if (member?.deactivatedAt) fail("/login", "This account is no longer active.");
   // Durable per-account lockout (survives restarts / multiple instances).
   if (member && isLockedOut(member)) fail("/login", LOCKOUT_MESSAGE);
 

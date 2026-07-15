@@ -27,7 +27,11 @@ export function joinIds(ids: string[]): string {
 type MemberLite = { id: string; role: string; familyId: string };
 
 async function familyParents(familyId: string) {
-  return db.member.findMany({ where: { familyId, role: Role.PARENT } });
+  // Only ACTIVE parents gate approvals — a deactivated parent must never be a
+  // required approver, or a "both parents" request could never complete.
+  return db.member.findMany({
+    where: { familyId, role: Role.PARENT, deactivatedAt: null },
+  });
 }
 
 // MARK: submitting requests

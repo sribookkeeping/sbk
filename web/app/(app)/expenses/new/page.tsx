@@ -26,7 +26,7 @@ export default async function NewExpensePage({
             <label className="mb-1 block text-sm font-medium" htmlFor="memberId">Who spent it?</label>
             {parent ? (
               <select id="memberId" name="memberId" defaultValue={member.id} className={inputClass}>
-                {member.family.members.map((m) => (
+                {member.family.members.filter((m) => !m.deactivatedAt).map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.emoji} {m.name}
                   </option>

@@ -72,7 +72,9 @@ export const POST = withAuth(async (member, request) => {
 
   const openToAnyone = body.openToAnyone === true;
   const assigneeIds = Array.isArray(body.assigneeIds) ? body.assigneeIds : [];
-  const validAssignees = member.family.members.filter((m) => assigneeIds.includes(m.id));
+  const validAssignees = member.family.members.filter(
+    (m) => assigneeIds.includes(m.id) && !m.deactivatedAt,
+  );
   if (!openToAnyone && validAssignees.length === 0) {
     return apiError("assigneeIds required (or set openToAnyone: true)", 400);
   }

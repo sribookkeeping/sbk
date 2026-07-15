@@ -37,7 +37,9 @@ export async function createSchedule(formData: FormData) {
   const openToAnyone =
     String(formData.get("assignMode") ?? "") === "open" ||
     formData.get("openToAnyone") === "on";
-  const validAssignees = member.family.members.filter((m) => assigneeIds.includes(m.id));
+  const validAssignees = member.family.members.filter(
+    (m) => assigneeIds.includes(m.id) && !m.deactivatedAt,
+  );
   if (!openToAnyone && validAssignees.length === 0) {
     fail(backPath, "Pick at least one person — or mark it open for anyone to claim.");
   }

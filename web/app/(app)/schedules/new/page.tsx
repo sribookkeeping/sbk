@@ -126,7 +126,9 @@ export default async function NewSchedulePage({
             </div>
 
             <AssignModeFields
-              assignFields={<AssigneePicker members={member.family.members} />}
+              assignFields={
+                <AssigneePicker members={member.family.members.filter((m) => !m.deactivatedAt)} />
+              }
             />
 
             <p className="text-xs text-zinc-500 dark:text-zinc-400">{approvalHint}</p>

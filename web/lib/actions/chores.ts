@@ -72,7 +72,10 @@ export async function createChore(formData: FormData) {
   }
 
   const validAssignees = member.family.members.filter(
-    (m) => assigneeIds.includes(m.id) && !(event && isExcludedFrom(event, m.id)),
+    (m) =>
+      assigneeIds.includes(m.id) &&
+      !m.deactivatedAt &&
+      !(event && isExcludedFrom(event, m.id)),
   );
   const { dueDate, reminderHour } = parseAssignment(formData);
 
@@ -321,7 +324,9 @@ export async function pickupChore(choreId: string, formData: FormData) {
   }
 
   const assigneeIds = formData.getAll("assignees").map(String);
-  const validAssignees = member.family.members.filter((m) => assigneeIds.includes(m.id));
+  const validAssignees = member.family.members.filter(
+    (m) => assigneeIds.includes(m.id) && !m.deactivatedAt,
+  );
   if (validAssignees.length === 0) {
     fail(`/chores/${choreId}/pickup`, "Pick at least one person.");
   }

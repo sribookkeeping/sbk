@@ -51,6 +51,9 @@ endpoints, which makes testing in a browser easy.)
 | `POST /api/v1/events/:id/reveal` | Reveal a surprise event (creator or parent) — visible to everyone after |
 | `GET /api/v1/reports?days=30` | Balance sheet for the period (kids: personal; adults: family) |
 | `POST /api/v1/reports` | Set email cadence: `{ frequency: NONE\|DAILY\|WEEKLY\|MONTHLY\|QUARTERLY\|HALF_YEARLY\|YEARLY }` |
+| `PATCH /api/v1/members/:id` | Edit a member: `{ name?, role?, emoji?, email?, password? }` — parents only; keeps ≥1 active parent |
+| `POST /api/v1/members/:id/deactivate` | Remove a member — parents only; history kept, sign-in dies, can't strand the last parent |
+| `POST /api/v1/members/:id/reactivate` | Restore a former member — parents only |
 | `GET /api/v1/expenses` | Expenses (kids: own; parents: family) |
 | `POST /api/v1/expenses` | multipart/form-data: `title, amountCents, date?, category?, notes?, memberId?, receipt` (image, required) |
 | `PATCH /api/v1/expenses/:id` | Edit an expense (owner or parent; audited) |
@@ -70,6 +73,9 @@ endpoints, which makes testing in a browser easy.)
   expenses, receipts, chores in progress) and can log expenses for anyone —
   but approval authority stays with parents.
 - Kids can only record/see their own expenses.
+- Members carry an `active` flag. A **deactivated** member can't sign in, be
+  assigned new work, or count as a required approver — but their ledger history
+  stays in reports/balances/audit. A family always keeps ≥1 active parent.
 - Every expense requires a receipt image; every completion requires a proof photo.
 - Chore edits/deletes need BOTH parents (proposer counts; deletes are soft —
   ledger history survives). Skip/reschedule needs any one parent.

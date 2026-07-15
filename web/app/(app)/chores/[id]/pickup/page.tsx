@@ -47,7 +47,7 @@ export default async function PickupChorePage({
 
         <form action={pickupChore.bind(null, chore.id)} className="space-y-5">
           <AssignmentFormFields
-            members={member.family.members}
+            members={member.family.members.filter((m) => !m.deactivatedAt)}
             defaultSelectedIds={[member.id]}
             defaultDue={defaultDueValue()}
           />

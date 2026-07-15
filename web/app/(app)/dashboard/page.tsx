@@ -146,7 +146,7 @@ export default async function DashboardPage() {
         <>
           <SectionTitle>Family balances</SectionTitle>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {member.family.members.map((m) => {
+            {member.family.members.filter((m) => !m.deactivatedAt).map((m) => {
               const b = balances.get(m.id) ?? EMPTY_BALANCE;
               return (
                 <Card key={m.id} className="text-center">

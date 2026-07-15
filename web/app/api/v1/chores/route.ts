@@ -62,7 +62,9 @@ export const POST = withAuth(async (member, request) => {
   const addToPool = body.addToPool === true && !event;
   const openToAnyone = body.openToAnyone === true;
   const assigneeIds = Array.isArray(body.assigneeIds) ? body.assigneeIds : [];
-  const validAssignees = member.family.members.filter((m) => assigneeIds.includes(m.id));
+  const validAssignees = member.family.members.filter(
+    (m) => assigneeIds.includes(m.id) && !m.deactivatedAt,
+  );
 
   if (!title) return apiError("title is required", 400);
   if (amountCents <= 0) return apiError("amountCents must be positive", 400);

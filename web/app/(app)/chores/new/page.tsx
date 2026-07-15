@@ -23,9 +23,11 @@ export default async function NewChorePage({
   // Optional event linkage: chores created for an event are hidden from the
   // event's excluded members and can't join the shared pool.
   const event = eventId ? await eventForMember(eventId, member) : null;
-  const visibleMembers = event
-    ? member.family.members.filter((m) => !event.excludedIds.split(",").includes(m.id))
-    : member.family.members;
+  const visibleMembers = (
+    event
+      ? member.family.members.filter((m) => !event.excludedIds.split(",").includes(m.id))
+      : member.family.members
+  ).filter((m) => !m.deactivatedAt);
 
   const otherParents = parents(member).filter((p) => p.id !== member.id);
   const poolHint = !isParent(member)
