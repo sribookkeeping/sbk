@@ -1,199 +1,477 @@
-# SriBookKeeping — Go-Live Runbook
+# SriBookKeeping — Detailed Go-Live Runbook
 
 Everything shares **one backend + one database** (the Next.js app in `web/`).
-So the order is: get the shared backend live first (**Common**), then each
-surface plugs into it. The **Web app is deployed as part of Common** — it *is*
-the backend. iOS and Android each just point at the deployed URL.
+Stand that up once (**Part A**), and every surface plugs into the deployed URL:
+the **web app ships with Part A**, **Android** is the same site installed as an
+app, and **iOS** is a native client pointed at the URL.
 
-Legend: ☁️ = needs an account/credential you create · 💻 = a command/edit ·
-⏱️ = rough effort.
+Do the parts in order. Each step is a real command, a real edit (with the full
+file contents to paste), or a dashboard clickpath, followed by a check.
+
+Conventions: `web/` = run inside the `web` folder. Replace `<...>` placeholders.
+Copy-paste blocks are complete file contents unless noted.
 
 ---
 
-## 0. Common — the shared backend + database (do this first)
+# Part A — Backend + database + web app (the shared core)
 
-Nothing else works until this is live. ⏱️ ~half a day the first time.
+## A0. Prerequisites (one-time)
 
-### 0.1 Provision Postgres ☁️
-- Create a **Neon Postgres** database (via the Vercel Marketplace, or Neon
-  directly). Copy its connection string.
-- SQLite was dev-only; production needs Postgres.
+**Tools on your Mac:**
+```sh
+node -v        # need v20+  (you have v26 ✓)
+git --version
+npm i -g vercel@latest
+```
 
-### 0.2 Point Prisma at Postgres 💻
-In `web/prisma/schema.prisma`:
+**Accounts to create (free tiers are fine):**
+- **GitHub** — https://github.com (host the repo; Vercel deploys from it)
+- **Vercel** — https://vercel.com/signup (hosting + Blob storage + cron)
+- **Neon** — https://neon.tech (Postgres) *or* add it via the Vercel Marketplace
+- **Resend** — https://resend.com (transactional email)
+- Later, only if you publish to stores: **Apple Developer** ($99/yr),
+  **Google Play Developer** ($25 once).
+
+## A1. Push the repo to GitHub
+
+The repo is already committed locally. Create an empty GitHub repo (no README),
+then:
+```sh
+cd /Users/yerra/Projects/SriBookKeeping
+git remote add origin https://github.com/<you>/SriBookKeeping.git
+git push -u origin main
+```
+**Check:** the code appears on github.com.
+
+## A2. Create the Postgres database (Neon)
+
+1. https://console.neon.tech → **New Project** → name it `sribookkeeping` →
+   pick a region near you → **Create**.
+2. On the project dashboard → **Connection string** → copy the
+   **Pooled connection** URL. It looks like:
+   `postgresql://<user>:<pass>@<host>-pooler.<region>.aws.neon.tech/<db>?sslmode=require`
+3. Keep it handy — it's your `DATABASE_URL`.
+
+**Check:** you have a `postgresql://...pooler...` URL.
+
+## A3. Switch Prisma from SQLite to Postgres
+
+**A3a — schema.** Edit `web/prisma/schema.prisma`, change only the datasource:
 ```prisma
 datasource db {
   provider = "postgresql"   // was "sqlite"
 }
 ```
-Swap the driver adapter in `web/lib/db.ts`:
+
+**A3b — driver adapter.** In `web/`:
 ```sh
-cd web
-npm i @prisma/adapter-pg
+npm i @prisma/adapter-pg pg
 npm rm @prisma/adapter-better-sqlite3
 ```
-Then in `web/lib/db.ts` replace `PrismaBetterSqlite3` with `PrismaPg`
-(`{ connectionString: process.env.DATABASE_URL }`).
-Regenerate migrations against the new DB (the existing `web/prisma/migrations`
-are SQLite dialect — delete them and recreate):
-```sh
-rm -rf prisma/migrations
-DATABASE_URL="<neon-url>" npx prisma migrate dev --name init
+
+**A3c — client.** Replace the entire contents of `web/lib/db.ts` with:
+```ts
+import { PrismaClient } from "@/lib/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+
+// Cloud: Postgres (Neon) via the pg driver adapter. DATABASE_URL is required.
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+function createClient() {
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+  return new PrismaClient({ adapter });
+}
+
+export const db = globalForPrisma.prisma ?? createClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
 ```
 
-### 0.3 Receipt & proof storage → Vercel Blob ☁️💻
-The local filesystem is ephemeral in the cloud. In `web/lib/storage.ts`,
-replace the two functions (`saveReceipt` / `readReceipt`) with **Vercel Blob**
-(`@vercel/blob` `put()` / fetch the returned URL). Store the blob URL in
-`Expense.receiptPath` / `Assignment.proofImage`. Nothing else changes.
+**A3d — regenerate migrations for Postgres.** The existing migrations are
+SQLite dialect; recreate them against Neon:
 ```sh
+cd web
+rm -rf prisma/migrations
+echo 'DATABASE_URL="<your-neon-pooled-url>"' > .env.production.local
+DATABASE_URL="<your-neon-pooled-url>" npx prisma migrate dev --name init
+```
+This creates the schema in Neon and a fresh `prisma/migrations/`.
+
+**Check:**
+```sh
+DATABASE_URL="<neon-url>" npx prisma studio   # opens a table browser on Neon
+```
+You should see all tables (Family, Member, Chore, …) empty.
+
+## A4. Receipt & proof storage → Vercel Blob
+
+Local disk is wiped on every deploy, so photos must go to Blob.
+
+**A4a — install:**
+```sh
+cd web
 npm i @vercel/blob
 ```
 
-### 0.4 Email → Resend ☁️💻
-Report emails, password-reset links, and "find my account" currently write to
-`web/outbox/`. In `web/lib/email.ts`, replace `sendEmail` with Resend:
+**A4b — replace the entire contents of `web/lib/storage.ts` with:**
+```ts
+import { put } from "@vercel/blob";
+import crypto from "node:crypto";
+
+// Receipt & proof photo storage on Vercel Blob. Files are uploaded with an
+// unguessable random path; they're still served only through the app's
+// auth-gated routes (/api/receipts/[id], /api/proofs/[id]), which verify
+// family membership before streaming the bytes.
+
+const MAX_BYTES = 10 * 1024 * 1024;
+const EXT_BY_TYPE: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/heic": ".heic",
+  "image/webp": ".webp",
+};
+
+/** Uploads an image and returns its Blob URL (stored in receiptPath/proofImage). */
+export async function saveReceipt(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) throw new Error("Receipt must be an image");
+  if (file.size === 0) throw new Error("Receipt image is empty");
+  if (file.size > MAX_BYTES) throw new Error("Receipt image is too large (max 10 MB)");
+
+  const ext = EXT_BY_TYPE[file.type] ?? ".jpg";
+  const { url } = await put(`receipts/${crypto.randomUUID()}${ext}`, file, {
+    access: "public",
+    contentType: file.type,
+    addRandomSuffix: false,
+  });
+  return url;
+}
+
+/** Fetches the stored image bytes for the auth-gated serving routes. */
+export async function readReceipt(
+  receiptPath: string,
+): Promise<{ data: Buffer; contentType: string } | null> {
+  if (!/^https:\/\//.test(receiptPath)) return null;
+  try {
+    const res = await fetch(receiptPath);
+    if (!res.ok) return null;
+    const data = Buffer.from(await res.arrayBuffer());
+    const contentType = res.headers.get("content-type") ?? "image/jpeg";
+    return { data, contentType };
+  } catch {
+    return null;
+  }
+}
+```
+(No other file changes — every caller already uses `saveReceipt`/`readReceipt`.)
+
+**A4c — enable Blob in Vercel** (after A6 links the project): Vercel dashboard →
+your project → **Storage** → **Create** → **Blob** → connect. This auto-adds the
+`BLOB_READ_WRITE_TOKEN` env var.
+
+## A5. Email → Resend
+
+**A5a — install:**
 ```sh
+cd web
 npm i resend
 ```
+
+**A5b — replace the entire contents of `web/lib/email.ts` with** (this keeps the
+local `web/outbox/` fallback when no API key is set, so dev still works):
 ```ts
-const resend = new Resend(process.env.RESEND_API_KEY);
-await resend.emails.send({ from, to, subject, html });
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { Resend } from "resend";
+
+// Cloud: Resend. Dev fallback: write the message to web/outbox/ as .html.
+const FROM = process.env.EMAIL_FROM ?? "SriBookKeeping <onboarding@resend.dev>";
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<void> {
+  if (process.env.RESEND_API_KEY) {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    await resend.emails.send({ from: FROM, to, subject, html });
+    return;
+  }
+  // Dev / no key configured → outbox file.
+  const dir = path.join(process.cwd(), "outbox");
+  await mkdir(dir, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const safeTo = to.replace(/[^a-z0-9@.-]/gi, "_");
+  await writeFile(
+    path.join(dir, `${stamp}_${safeTo}.html`),
+    `<!-- To: ${to} -->\n<!-- Subject: ${subject} -->\n${html}`,
+  );
+  console.log(`[email:dev] "${subject}" → ${to}`);
+}
 ```
 
-### 0.5 Deploy to Vercel ☁️💻
+**A5c — Resend setup:** https://resend.com → **API Keys** → **Create** → copy
+(that's `RESEND_API_KEY`). To send from your own domain (recommended), Resend →
+**Domains** → **Add Domain** → add the DNS records it shows → verify, then set
+`EMAIL_FROM="SriBookKeeping <noreply@yourdomain.com>"`. Until then the default
+`onboarding@resend.dev` works for testing to your own address.
+
+**A5d — commit the swaps:**
 ```sh
-npm i -g vercel@latest
+cd /Users/yerra/Projects/SriBookKeeping
+git add -A && git commit -m "Cloud swaps: Postgres, Vercel Blob, Resend"
+git push
+```
+
+## A6. Create the Vercel project & first deploy
+
+```sh
 cd web
-vercel link
-vercel            # preview
-vercel --prod     # production
+vercel link          # → create a new project; scope = your account
 ```
+Then either **CLI deploy** (`vercel` for preview, `vercel --prod` for prod) or
+connect the GitHub repo in the dashboard (**Add New → Project → import your
+repo**). **Important:** set the **Root Directory** to `web` (the Next app is in a
+subfolder), Framework = Next.js.
 
-### 0.6 Environment variables ☁️ (Vercel → Project → Settings → Env)
-| Var | Purpose |
-|---|---|
-| `DATABASE_URL` | Neon Postgres connection string |
-| `AUTH_SECRET` | session/JWT signing — `openssl rand -base64 32` (**required in prod**) |
-| `APP_URL` | your https domain — used in reset/find-account email links |
-| `CRON_SECRET` | protects `/api/cron` — `openssl rand -base64 32` |
-| `BLOB_READ_WRITE_TOKEN` | auto-added when you enable Vercel Blob |
-| `RESEND_API_KEY` | from Resend |
-| `NEXT_PUBLIC_CURRENCY` | optional, e.g. `USD` (default) |
+Don't worry if this first deploy fails for missing env vars — set them next.
 
-### 0.7 Custom domain + HTTPS ☁️
-Add your registered domain in the Vercel dashboard → set DNS → HTTPS is
-automatic. **HTTPS is required** for PWA install, camera capture, and push.
+## A7. Environment variables
 
-### 0.8 Scheduled jobs (reminders + reports) 💻
-The sweep (claim reminders, auto-assign) and due report emails currently run
-on page loads. For exact timing, add a **Vercel Cron** hitting the existing
-route `web/app/api/cron/route.ts` (it runs `runScheduleSweep` + `sendDueReports`
-for every family, guarded by `CRON_SECRET`). In `web/vercel.json` (or
-`vercel.ts`):
+Vercel dashboard → project → **Settings → Environment Variables**. Add each for
+**Production** (and Preview if you want):
+
+| Name | Value | How to get it |
+|---|---|---|
+| `DATABASE_URL` | Neon pooled URL | A2 |
+| `AUTH_SECRET` | random 32+ bytes | `openssl rand -base64 32` |
+| `CRON_SECRET` | random 32+ bytes | `openssl rand -base64 32` |
+| `APP_URL` | `https://<your-domain>` | A9 (use the `*.vercel.app` URL until the domain is set) |
+| `RESEND_API_KEY` | Resend key | A5c |
+| `EMAIL_FROM` | `SriBookKeeping <noreply@yourdomain.com>` | A5c (optional) |
+| `BLOB_READ_WRITE_TOKEN` | auto-added | A4c (enable Blob storage) |
+| `NEXT_PUBLIC_CURRENCY` | `USD` | optional (default USD) |
+
+Generate the two secrets:
+```sh
+openssl rand -base64 32   # AUTH_SECRET
+openssl rand -base64 32   # CRON_SECRET
+```
+Then redeploy: `vercel --prod` (or dashboard → Deployments → Redeploy).
+
+**Check:** open the deployment URL — the landing page loads over HTTPS.
+
+## A8. Run the migration against production
+
+Your local `migrate dev` (A3d) already created the schema in Neon, so nothing
+more is needed. For future schema changes, deploy them with:
+```sh
+cd web
+DATABASE_URL="<neon-url>" npx prisma migrate deploy
+```
+(Optionally add `"postinstall": "prisma generate"` is already present; you can
+also add a `vercel-build` that runs `prisma migrate deploy && next build`.)
+
+## A9. Custom domain + HTTPS
+
+Vercel → project → **Settings → Domains** → add `yourdomain.com` → follow the
+DNS instructions at your registrar (A/CNAME). HTTPS is automatic once DNS
+propagates. Update `APP_URL` to the final `https://yourdomain.com` and redeploy.
+
+**Why it matters:** PWA install, camera capture, and push all require HTTPS.
+
+## A10. Scheduled jobs (reminders + report emails)
+
+The claim-reminder / auto-assign sweep and due report emails run on page loads
+in dev; in prod a cron makes the timing exact. The route already exists at
+`web/app/api/cron/route.ts` and checks `CRON_SECRET`.
+
+Create `web/vercel.json`:
 ```json
-{ "crons": [{ "path": "/api/cron", "schedule": "0 * * * *" }] }
+{
+  "crons": [
+    { "path": "/api/cron", "schedule": "0 * * * *" }
+  ]
+}
 ```
-(Hourly is enough for the 24h/12h claim windows; use `0 * * * *`.)
+Commit + push + redeploy. Vercel Cron automatically sends
+`Authorization: Bearer $CRON_SECRET`. Hourly covers the 24h reminder / 12h
+auto-assign windows.
 
-### 0.9 First family + admin ☁️
-- Register your family at `https://<domain>/register`.
-- To grant yourself the platform-admin console (`/admin` + impersonation), set
-  `isPlatformAdmin = true` on your member row once (Neon SQL editor or
-  `npx prisma studio` against the prod DB).
+**Check:** Vercel → project → **Cron Jobs** shows `/api/cron` scheduled; trigger
+it once and confirm a 200.
 
-### 0.10 Hardening (before inviting others) 💻
-- Swap the in-memory IP throttle (`web/lib/rate-limit.ts`) for **Upstash
-  Ratelimit** or the Vercel WAF (the DB account-lockout already spans
-  instances).
-- Enable Neon backups / point-in-time restore.
-- Publish a **privacy policy** page (App Store + Play Store both require one).
+## A11. Create your family & grant admin
 
----
+1. Go to `https://yourdomain.com/register` and set up your family.
+2. To unlock the platform-admin console (`/admin` + impersonation), flip your
+   member row once:
+```sh
+cd web
+DATABASE_URL="<neon-url>" npx prisma studio
+# Member table → your row → isPlatformAdmin = true → Save
+```
+   (Or run one SQL update in the Neon console.)
 
-## 1. Web app
+## A12. Production smoke test (do all of these on the live URL)
 
-The web app **ships with Common** (it's the same deployment). After 0.5:
+- [ ] Register → add a spouse + kid in **Family**
+- [ ] Create a pool chore; second parent **approves** it
+- [ ] Pick up → **Complete** with a **photo** → proof shows in **Audit**
+- [ ] Record an **expense** with a bill photo → opens in detail
+- [ ] Record a **payout** → balance drops
+- [ ] Create an **event**, exclude the kid, chat, then **reveal**
+- [ ] **Reports** → "Send me a copy now" → arrives in your inbox (Resend)
+- [ ] **Forgot password** → reset email arrives → reset works, old sessions die
+- [ ] Install the **PWA** (address-bar install icon) and reopen standalone
 
-- 💻 Smoke-test the core flows on the live URL: register → add members → create
-  chore → pick up → complete with proof → approve → record expense → payout →
-  report → event + reveal → audit.
-- 💻 Confirm the **PWA installs** (Chrome address-bar install icon) and camera
-  capture works — both need the HTTPS domain from 0.7.
-- 💻 Optional polish: real Open Graph / social preview image, a favicon set,
-  analytics.
+## A13. Hardening before inviting other families
 
-Nothing else is separate for web — it's done once Common is live.
-
----
-
-## 2. iOS app (native, SwiftUI)
-
-The app is a pure client of the deployed API. ⏱️ ~1–2 hrs to run; longer for
-the App Store.
-
-### 2.1 Build & run 💻
-1. Install **Xcode 16+**, then
-   `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`.
-2. Open `SriBookKeeping.xcodeproj`; select the target → **Signing &
-   Capabilities** → pick your Apple ID / team; set a unique bundle id.
-3. Run on a simulator or your iPhone. Expect to fix a small SwiftData-free
-   compile nit or two — this is the app's **first real Xcode build** (only
-   type-checked so far via `Scripts/typecheck.sh`).
-
-### 2.2 Point at production 💻
-- On the sign-in screen, set **Server URL** to `https://<your-domain>`, or
-  change the default in `SriBookKeeping/Core/API.swift` (`serverURLString`).
-- Sign in with the same email/password as the website — same account, same
-  data.
-
-### 2.3 Optional: fill remaining native screens 💻
-Endpoints already exist (see `web/API.md`); the iOS UI doesn't yet cover:
-create schedule, link chore→event, propose chore edit/delete, audit log, admin
-console, member management. Add screens as desired.
-
-### 2.4 Push notifications (optional for v1) ☁️💻
-Local notifications already remind the assignee. For server-driven push you
-need an **Apple Developer account**, an APNs auth key, and a send step in the
-cron. Until then, local notifications keep working.
-
-### 2.5 App Store ☁️
-- Enroll in the **Apple Developer Program** ($99/yr).
-- Camera/notification usage strings are already set in the project.
-- TestFlight → submit for review with screenshots + the privacy-policy URL.
+- [ ] Replace the in-memory IP throttle (`web/lib/rate-limit.ts`) with
+      **Upstash Ratelimit** (`npm i @upstash/ratelimit @upstash/redis`) — the
+      DB account-lockout already spans instances, this covers the IP layer.
+- [ ] Neon → enable backups / confirm point-in-time restore.
+- [ ] Publish a **Privacy Policy** page (both app stores require a URL).
+- [ ] Optional: Vercel WAF / BotID on `/api/v1/auth/*` and `/register`.
 
 ---
 
-## 3. Android (installable PWA — already built)
+# Part B — Web app
 
-Android is served by the **same PWA** — no separate build or codebase. ⏱️
-minutes once the web app is on HTTPS.
+The web app is **already live** after Part A (same deployment). Nothing separate
+to build. Just confirm on the production URL:
 
-### 3.1 Install on a phone 💻
-- Open `https://<your-domain>` in **Chrome on Android** → ⋮ menu → **Install
-  app** (or tap the **Install app** button on the sign-in screen). It launches
-  full-screen with its own icon.
-- Verify camera capture (bill/proof photos) works — needs HTTPS (0.7).
-
-### 3.2 Optional: publish to the Play Store via a TWA ☁️💻
-If you want a Play Store *listing* (not required — the PWA installs directly):
-- Wrap the deployed PWA in a **Trusted Web Activity** with **Bubblewrap**
-  (`npm i -g @bubblewrap/cli`, `bubblewrap init --manifest
-  https://<domain>/manifest.webmanifest`).
-- Host the generated `/.well-known/assetlinks.json` on your domain to verify
-  ownership.
-- Create a **Google Play Developer** account ($25 one-time), upload the AAB.
-
-### 3.3 Optional: web push 💻
-The manifest + service worker are in place; browser push needs VAPID keys + a
-push-subscription flow (and a send step in the cron). Not required for install.
+- [ ] All flows in A12 pass.
+- [ ] Camera capture works when adding an expense/proof (needs HTTPS from A9).
+- [ ] Dark mode + mobile layout look right (resize the browser).
+- [ ] Optional: add a social/OG preview image and a full favicon set.
 
 ---
 
-## Suggested order
+# Part C — iOS app (native SwiftUI)
 
-1. **Common 0.1–0.9** → backend + web live (Android installs immediately after,
-   step 3.1).
-2. **0.10 hardening** before inviting other families.
-3. **iOS 2.1–2.2** to get the native app on your phone; App Store later.
-4. Optional: iOS parity screens, push, Play Store TWA, product enhancements.
+The app is a pure REST client of your deployed API. ⏱️ ~1–2 hrs to run on a
+device; the App Store is a separate, longer track.
+
+## C1. Open & configure in Xcode
+1. Install **Xcode 16+** (Mac App Store). Then:
+   ```sh
+   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+   ```
+2. Open `SriBookKeeping.xcodeproj`.
+3. Select the **SriBookKeeping** target → **Signing & Capabilities**:
+   - **Team**: pick your Apple ID (free account works for running on your own
+     device; the paid program is only needed for TestFlight/App Store).
+   - **Bundle Identifier**: change to something unique, e.g.
+     `com.<you>.SriBookKeeping`.
+   - Leave **Automatically manage signing** on.
+
+## C2. Point the app at production
+- Easiest: run it, and on the **sign-in screen** set **Server URL** to
+  `https://yourdomain.com`.
+- Or make it the default: in `SriBookKeeping/Core/API.swift`, change the
+  fallback in `serverURLString` from `http://localhost:3000` to your domain.
+
+## C3. Build & run
+1. Pick a **simulator** (e.g. iPhone 16) or your plugged-in iPhone in the scheme
+   selector.
+2. **⌘R**. This is the app's **first real Xcode compile** (previously only
+   type-checked headlessly), so budget time for one or two small fixes:
+   - If a SwiftUI/SDK API mismatch appears, Xcode will point at the exact line.
+   - On a physical device: **Settings → General → VPN & Device Management** →
+     trust your developer certificate the first time.
+3. Sign in with the same email/password as the website — same family, same data.
+
+**Check:** the dashboard shows your family's live balances (proving it's hitting
+the deployed API, not local data).
+
+## C4. (Optional) Fill the remaining native screens
+Endpoints already exist (`web/API.md`); the iOS UI doesn't yet include: create
+schedule, link chore→event, propose chore edit/delete, audit log, admin console,
+member management. Add SwiftUI screens calling those endpoints as needed.
+
+## C5. (Optional) Push notifications
+Local notifications already remind the assignee. For server push you need the
+paid Apple Developer account, an **APNs key** (Keys → +), the Push
+Notifications capability, and a send step in the cron. Until then local
+notifications keep working.
+
+## C6. App Store submission
+1. Enroll in the **Apple Developer Program** ($99/yr).
+2. In **App Store Connect** create the app record (matching bundle id).
+3. Xcode → **Product → Archive** → **Distribute App → App Store Connect**.
+4. Add screenshots, description, and the **privacy-policy URL** (from A13).
+5. Submit for review (TestFlight first is recommended). Camera + notification
+   usage strings are already set in the project.
+
+---
+
+# Part D — Android (installable PWA — already built)
+
+Android is served by the **same PWA** from Part A. No separate codebase or
+build. ⏱️ minutes.
+
+## D1. Install on an Android phone
+1. Open `https://yourdomain.com` in **Chrome on Android**.
+2. Tap the **⋮** menu → **Install app** (or **Add to Home screen**), or tap the
+   **Install app** button on the sign-in screen.
+3. It launches full-screen with the app icon and emerald status bar.
+4. Sign in with the same account. Test camera capture on an expense (needs
+   HTTPS — works on your domain).
+
+**Check:** the app appears in the app drawer and opens without browser chrome.
+
+## D2. (Optional) Publish to the Google Play Store via a TWA
+Only needed if you want a Play Store *listing* — the PWA installs directly
+without it. A **Trusted Web Activity** wraps your live PWA:
+
+1. Install Bubblewrap:
+   ```sh
+   npm i -g @bubblewrap/cli
+   ```
+2. Generate the Android project from your manifest:
+   ```sh
+   bubblewrap init --manifest https://yourdomain.com/manifest.webmanifest
+   bubblewrap build
+   ```
+   This produces a signed **`.aab`** and prints a **SHA-256 fingerprint**.
+3. Prove domain ownership: host
+   `https://yourdomain.com/.well-known/assetlinks.json` containing that
+   fingerprint (Bubblewrap prints the exact JSON; drop it in
+   `web/public/.well-known/assetlinks.json` and redeploy).
+4. Create a **Google Play Developer** account ($25 one-time), create the app,
+   upload the `.aab`, fill the listing + privacy policy, and roll out.
+
+## D3. (Optional) Web push on Android
+The manifest + service worker are already in place. To add push: generate VAPID
+keys, add a push-subscription flow in the client, store subscriptions, and send
+from the cron. Not required for install or normal use.
+
+---
+
+# Troubleshooting
+
+- **`AUTH_SECRET must be set in production`** → you deployed without
+  `AUTH_SECRET`. Set it (A7) and redeploy.
+- **Prisma "provider mismatch" / migration errors** → you didn't recreate
+  migrations after switching to `postgresql` (redo A3d: `rm -rf
+  prisma/migrations` then `migrate dev`).
+- **Blob upload 500** → `BLOB_READ_WRITE_TOKEN` missing; enable Blob storage
+  (A4c) and redeploy.
+- **Reset/report emails don't arrive** → `RESEND_API_KEY` missing (falls back to
+  `web/outbox/`, which doesn't exist in prod), or `EMAIL_FROM` domain not
+  verified in Resend. Test to your own inbox with the default sender first.
+- **Cron never runs** → confirm `web/vercel.json` was deployed and `CRON_SECRET`
+  is set; check Vercel → Cron Jobs.
+- **iOS "Could not connect to server"** → Server URL must be `https://` your
+  domain (App Transport Security blocks plain-http except localhost).
+- **PWA won't install / camera blocked** → must be HTTPS (A9); a plain-http LAN
+  IP won't offer install or camera.
+
+## Fastest path to "it works"
+A0 → A1 → A2 → A3 → A4(a,b) → A5(a,b) → commit → A6 → A7 → A9 → A10 → A11 →
+A12. Android (D1) works the moment A9 is done. iOS (C1–C3) whenever you're at a
+Mac with Xcode.
