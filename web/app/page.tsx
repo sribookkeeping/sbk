@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentMember } from "@/lib/auth";
 import { buttonPrimary, buttonSecondary, Card } from "@/components/ui";
+import { InstallButton } from "@/components/install-button";
 
 const FEATURES = [
   {
@@ -55,6 +56,9 @@ export default async function LandingPage() {
           <Link href="/login" className={buttonSecondary}>
             Sign in
           </Link>
+        </div>
+        <div className="mt-4 flex justify-center">
+          <InstallButton />
         </div>
       </div>
 

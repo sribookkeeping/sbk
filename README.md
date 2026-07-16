@@ -5,17 +5,19 @@ amounts, anyone in the family picks them up and earns, everyone logs expenses
 with a photo of the bill, and the dashboard shows each member's
 **earnings − expenses = balance**. Parent approvals are built into everything.
 
-**One system, two interfaces.** The Next.js app owns the backend and the
+**One system, many interfaces.** The Next.js app owns the backend and the
 database; the iPhone app is a native client of the same REST API
-(`web/API.md`) with the same account. Anything done on one surface appears on
-the other instantly.
+(`web/API.md`) with the same account; and the website is an installable PWA,
+so **Android** phones (and iPhone/tablets) get a full-screen, home-screen app
+too. Anything done on any surface appears on the others instantly.
 
 | | Where | Stack |
 |---|---|---|
 | **Backend + website** | `web/` | Next.js 16 + Prisma + SQLite (→ Postgres in cloud) |
+| **Android (+ any device)** | `web/` — installable PWA | manifest + service worker; install from the browser, runs standalone |
 | **iPhone app** | `SriBookKeeping.xcodeproj` + `SriBookKeeping/` | SwiftUI, iOS 17+ — pure API client (no local database) |
 
-## Feature map (both apps)
+## Feature map (all interfaces)
 
 | # | Requirement | Implementation |
 |---|-------------|-------|
@@ -79,6 +81,27 @@ cents. The REST API for the iOS app is documented in [web/API.md](web/API.md).
 
 No Xcode yet? `Scripts/typecheck.sh` fully type-checks the app with just
 Command Line Tools (the app is plain Swift/SwiftUI — no local database).
+
+## Install on Android (and any phone) — PWA
+
+The website is an installable **Progressive Web App**, so Android phones get a
+real home-screen app with no Play Store step:
+
+1. Open the site in **Chrome on Android** → menu (⋮) → **Install app** /
+   **Add to Home screen** (or tap the **Install app** button on the sign-in
+   screen). It launches full-screen with its own icon.
+2. **iPhone/iPad** (bonus): Safari → **Share** → **Add to Home Screen**.
+3. **Desktop** Chrome/Edge: the install icon in the address bar.
+
+It runs standalone with the brand icon and theme color, and shows a friendly
+offline page if the connection drops. The service worker
+(`web/public/sw.js`) is deliberately conservative — it never caches page HTML
+or API responses (per-user data stays fresh and is never shared between
+accounts); only immutable static assets are cached. Manifest lives in
+`web/app/manifest.ts`, icons in `web/public/icons/`.
+
+> Camera capture (bill/proof photos) and web-push both require **HTTPS**, so
+> they work once deployed (or via `localhost`), not over a plain-HTTP LAN IP.
 
 ## Tests
 

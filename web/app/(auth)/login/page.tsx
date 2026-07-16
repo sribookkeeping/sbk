@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { login } from "@/lib/actions/auth";
 import { buttonPrimary, Card, ErrorBanner, inputClass } from "@/components/ui";
+import { InstallButton } from "@/components/install-button";
 
 export default async function LoginPage({
   searchParams,
@@ -46,6 +47,10 @@ export default async function LoginPage({
           Set up your family
         </Link>
       </p>
+
+      <div className="mt-6 flex justify-center">
+        <InstallButton />
+      </div>
     </main>
   );
 }
