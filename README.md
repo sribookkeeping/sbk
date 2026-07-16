@@ -13,7 +13,7 @@ too. Anything done on any surface appears on the others instantly.
 
 | | Where | Stack |
 |---|---|---|
-| **Backend + website** | `web/` | Next.js 16 + Prisma + SQLite (→ Postgres in cloud) |
+| **Backend + website** | `web/` | Next.js 16 + Prisma + **PostgreSQL** (local Postgres or Neon) |
 | **Android (+ any device)** | `web/` — installable PWA | manifest + service worker; install from the browser, runs standalone |
 | **iPhone app** | `SriBookKeeping.xcodeproj` + `SriBookKeeping/` | SwiftUI, iOS 17+ — pure API client (no local database) |
 
@@ -53,13 +53,21 @@ too. Anything done on any surface appears on the others instantly.
 
 ## Run the website locally
 
+The app runs on **PostgreSQL** (dev/prod parity). Point `DATABASE_URL` at a
+local Postgres (or a Neon dev branch):
+
 ```sh
 cd web
+cp .env.example .env       # then set DATABASE_URL to your local Postgres
 npm install               # also runs `prisma generate`
-npx prisma migrate dev    # creates prisma/dev.db (SQLite)
+npx prisma migrate dev    # applies the schema to your database
 npm run seed              # optional demo family (see below)
 npm run dev               # → http://localhost:3000
 ```
+
+No local Postgres? Spin an ephemeral one with the bundled tools, e.g.
+`initdb -D /tmp/pg && pg_ctl -D /tmp/pg -o "-p 5432" start && createdb sbk`,
+then `DATABASE_URL="postgresql://postgres@127.0.0.1:5432/sbk"`.
 
 Demo sign-ins after `npm run seed` (password `demo1234` for all):
 `ravi@demo.family` (head parent) · `sita@demo.family` (other parent) ·
@@ -110,7 +118,7 @@ accounts); only immutable static assets are cached. Manifest lives in
 math incl. payouts, schedule recurrence/end-dates and the claim→auto-assign
 sweep, surprise-event exclusion + reveal, reset tokens, session revocation,
 impersonation-token expiry, claim/complete race-safety, timezone math, and
-the audit log. Runs against a throwaway SQLite db (`prisma/test.db`).
+the audit log. Runs against a throwaway Postgres db (`TEST_DATABASE_URL`, default `sbk_test`).
 
 ## Security model
 
@@ -146,13 +154,11 @@ the audit log. Runs against a throwaway SQLite db (`prisma/test.db`).
 
 Work through these in order once you're ready to go live:
 
-### 1. Database → Postgres
+### 1. Database → Postgres  ✅ done in code
+The app already runs on PostgreSQL (`schema.prisma` provider `postgresql`,
+`lib/db.ts` on `@prisma/adapter-pg`, Postgres-dialect migrations). You just:
 - [ ] Provision **Neon Postgres** via the Vercel Marketplace (or any Postgres).
-- [ ] In `web/prisma/schema.prisma`: change `provider = "sqlite"` → `"postgresql"`.
-- [ ] Swap the driver adapter in `web/lib/db.ts`: `@prisma/adapter-better-sqlite3`
-      → `@prisma/adapter-pg` (`npm i @prisma/adapter-pg`).
-- [ ] Delete `web/prisma/migrations/` (SQLite dialect) and run
-      `npx prisma migrate dev --name init` against the new `DATABASE_URL`.
+- [ ] Apply the schema: `DATABASE_URL="<neon-url>" npx prisma migrate deploy`.
 
 ### 2. Receipt storage → Vercel Blob
 - [ ] The local filesystem is ephemeral on Vercel. Replace the two functions in

@@ -1,11 +1,12 @@
 // SriBookKeeping schema — mirrors the iOS app's SwiftData models.
 //
-// SQLite for local development. To deploy on Postgres (e.g. Neon via Vercel
-// Marketplace): change `provider` to "postgresql", set DATABASE_URL, and run
-// `npx prisma migrate dev` to regenerate migrations.
+// PostgreSQL everywhere (dev/prod parity). Local dev + tests use a local
+// Postgres; production uses Neon (set DATABASE_URL). Run `npx prisma migrate
+// dev` to evolve the schema.
 //
-// SQLite notes: no native enums (String constants in lib/types.ts are the
-// source of truth) and money is stored as integer cents.
+// Conventions kept from the SQLite era for portability: no native enums
+// (String constants in lib/types.ts are the source of truth) and money is
+// stored as integer cents.
 
 generator client {
   provider = "prisma-client"
@@ -13,7 +14,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Family {

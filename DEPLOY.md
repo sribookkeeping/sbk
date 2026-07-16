@@ -54,54 +54,26 @@ git push -u origin main
 
 **Check:** you have a `postgresql://...pooler...` URL.
 
-## A3. Switch Prisma from SQLite to Postgres
+## A3. Apply the schema to your Neon database
 
-**A3a — schema.** Edit `web/prisma/schema.prisma`, change only the datasource:
-```prisma
-datasource db {
-  provider = "postgresql"   // was "sqlite"
-}
-```
+**Already done in code** — the app runs on **PostgreSQL**: `schema.prisma` uses
+`provider = "postgresql"`, `lib/db.ts` uses the `@prisma/adapter-pg` driver, and
+`prisma/migrations/` is Postgres dialect. So you only need to apply that schema
+to your Neon database:
 
-**A3b — driver adapter.** In `web/`:
-```sh
-npm i @prisma/adapter-pg pg
-npm rm @prisma/adapter-better-sqlite3
-```
-
-**A3c — client.** Replace the entire contents of `web/lib/db.ts` with:
-```ts
-import { PrismaClient } from "@/lib/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-
-// Cloud: Postgres (Neon) via the pg driver adapter. DATABASE_URL is required.
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
-
-function createClient() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-  return new PrismaClient({ adapter });
-}
-
-export const db = globalForPrisma.prisma ?? createClient();
-
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
-```
-
-**A3d — regenerate migrations for Postgres.** The existing migrations are
-SQLite dialect; recreate them against Neon:
 ```sh
 cd web
-rm -rf prisma/migrations
-echo 'DATABASE_URL="<your-neon-pooled-url>"' > .env.production.local
-DATABASE_URL="<your-neon-pooled-url>" npx prisma migrate dev --name init
+DATABASE_URL="<your-neon-pooled-url>" npx prisma migrate deploy
 ```
-This creates the schema in Neon and a fresh `prisma/migrations/`.
+This creates all tables in Neon from the committed migrations.
 
 **Check:**
 ```sh
-DATABASE_URL="<neon-url>" npx prisma studio   # opens a table browser on Neon
+DATABASE_URL="<your-neon-url>" npx prisma studio   # table browser on Neon
 ```
-You should see all tables (Family, Member, Chore, …) empty.
+You should see all tables (Family, Member, Chore, …) empty. (In Vercel, set
+`DATABASE_URL` in A7; the build's `vercel-build`/`postinstall` handles the rest,
+or run `migrate deploy` from your machine once.)
 
 ## A4. Receipt & proof storage → Vercel Blob
 

@@ -2,11 +2,7 @@
 // Sign in as ravi@demo.family / demo1234 (head), sita@demo.family / demo1234
 // (other parent), or arjun@demo.family / demo1234 (kid).
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "../lib/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-
-const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL ?? "file:./prisma/dev.db" });
-const db = new PrismaClient({ adapter });
+import { db } from "../lib/db";
 
 async function main() {
   const existing = await db.family.findFirst({ where: { name: "The Demo Family" } });

@@ -16,3 +16,9 @@ xcuserdata/
 
 # macOS
 .DS_Store
+
+# Secrets — never commit
+.env
+.env.*
+env.txt
+*.secret
