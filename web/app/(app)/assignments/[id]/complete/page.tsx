@@ -38,10 +38,10 @@ export default async function CompleteAssignmentPage({
       </div>
 
       <Card className="mt-2">
-        <div className="mb-5 flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-3 dark:bg-emerald-950">
+        <div className="mb-5 flex items-center justify-between rounded-xl bg-indigo-50 px-4 py-3 dark:bg-indigo-950">
           <div>
             <p className="font-semibold">{assignment.chore.title}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Assigned to {assignment.assignee.name}
             </p>
           </div>
@@ -51,7 +51,7 @@ export default async function CompleteAssignmentPage({
         <form action={completeAssignment.bind(null, assignment.id)} className="space-y-5">
           <div className="rounded-xl border border-black/10 p-4 dark:border-white/15">
             <p className="text-sm font-semibold">Was it harder than usual? 💪</p>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               The base amount is credited right away. Any extra you request is credited once a
               parent approves it.
             </p>
@@ -88,9 +88,9 @@ export default async function CompleteAssignmentPage({
               accept="image/*"
               capture="environment"
               required
-              className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
+              className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
             />
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               On a phone this opens the camera. Parents can see the photo in the audit log.
             </p>
           </div>

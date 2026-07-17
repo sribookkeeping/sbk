@@ -62,7 +62,7 @@ export default async function FamilyPage({
       <div className="mt-4 space-y-2">
         <ErrorBanner message={error} />
         {updated && (
-          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+          <p className="rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
             Member updated.
           </p>
         )}
@@ -72,7 +72,7 @@ export default async function FamilyPage({
           </p>
         )}
         {restored && (
-          <p className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+          <p className="rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
             Member restored.
           </p>
         )}
@@ -92,7 +92,7 @@ export default async function FamilyPage({
                       <p className="font-medium">
                         {m.name} {m.isHead && "👑"}
                       </p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {roleLabel(m.role)}
                         {m.email ? ` · ${m.email}` : " · no sign-in yet"}
                       </p>
@@ -103,7 +103,7 @@ export default async function FamilyPage({
 
                 {parent && (
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    <summary className="cursor-pointer text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                       Edit
                     </summary>
                     <form
@@ -185,7 +185,7 @@ export default async function FamilyPage({
                       <Avatar emoji={m.emoji} isParent={m.role === Role.PARENT} size={36} />
                       <div>
                         <p className="font-medium line-through">{m.name}</p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           {roleLabel(m.role)} · removed
                         </p>
                       </div>
@@ -194,7 +194,7 @@ export default async function FamilyPage({
                       <Money cents={balance.balanceCents} />
                       {parent && (
                         <form action={reactivateMember.bind(null, m.id)}>
-                          <button className="text-xs font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+                          <button className="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
                             Restore
                           </button>
                         </form>
@@ -211,7 +211,7 @@ export default async function FamilyPage({
       <SectionTitle>My account</SectionTitle>
       <Card>
         {pwd && (
-          <p className="mb-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+          <p className="mb-3 rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
             Password changed — every other device has been signed out.
           </p>
         )}
@@ -231,13 +231,13 @@ export default async function FamilyPage({
             </div>
             <div className="sm:col-span-3">
               <button type="submit" className={buttonSecondary}>Change password</button>
-              <span className="ml-3 text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="ml-3 text-xs text-slate-500 dark:text-slate-400">
                 Changing it signs out all other devices.
               </span>
             </div>
           </form>
         ) : (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             This profile has no sign-in yet — a parent can add an email + password below.
           </p>
         )}
@@ -248,11 +248,11 @@ export default async function FamilyPage({
           <SectionTitle>💵 Record a payout</SectionTitle>
           <Card>
             {paid && (
-              <p className="mb-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+              <p className="mb-3 rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                 Payout recorded — balances updated.
               </p>
             )}
-            <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
               Handed someone cash (or transferred their earnings)? Record it here — their balance
               goes down by the amount. balance = earned − spent − paid out.
             </p>
@@ -283,7 +283,7 @@ export default async function FamilyPage({
                   <li key={p.id} className="flex items-center justify-between py-2">
                     <span>
                       {p.member.emoji} {p.member.name}
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         {" "}· {fmtDate(p.createdAt)} · by {p.paidBy?.name ?? "?"}
                         {p.note ? ` · ${p.note}` : ""}
                       </span>
@@ -298,7 +298,7 @@ export default async function FamilyPage({
           <SectionTitle>Family settings</SectionTitle>
           <Card>
             {tz && (
-              <p className="mb-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+              <p className="mb-3 rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
                 Timezone updated — schedules and reminders now run on it.
               </p>
             )}
@@ -314,7 +314,7 @@ export default async function FamilyPage({
                 </select>
               </div>
               <button type="submit" className={buttonSecondary}>Save</button>
-              <p className="w-full text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="w-full text-xs text-slate-500 dark:text-slate-400">
                 Schedule reminder hours and day boundaries run in this timezone — important once
                 the app is hosted in the cloud (servers run in UTC).
               </p>

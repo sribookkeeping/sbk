@@ -48,34 +48,34 @@ export default async function ExpenseDetailPage({
       <Card className="mt-6">
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between">
-            <dt className="text-zinc-500 dark:text-zinc-400">Title</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Title</dt>
             <dd className="font-medium">{expense.title}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-zinc-500 dark:text-zinc-400">Amount</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Amount</dt>
             <dd className="font-bold text-red-600 dark:text-red-400">
               {fmtMoney(expense.amountCents)}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-zinc-500 dark:text-zinc-400">Spent by</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Spent by</dt>
             <dd className="font-medium">
               {expense.member.emoji} {expense.member.name}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-zinc-500 dark:text-zinc-400">Category</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Category</dt>
             <dd>
               {category.emoji} {category.label}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-zinc-500 dark:text-zinc-400">Date</dt>
+            <dt className="text-slate-500 dark:text-slate-400">Date</dt>
             <dd>{fmtDate(expense.date)}</dd>
           </div>
           {expense.notes && (
             <div className="flex justify-between gap-6">
-              <dt className="text-zinc-500 dark:text-zinc-400">Notes</dt>
+              <dt className="text-slate-500 dark:text-slate-400">Notes</dt>
               <dd className="text-right">{expense.notes}</dd>
             </div>
           )}

@@ -14,7 +14,7 @@ export default async function AuditPage() {
   return (
     <>
       <h1 className="text-2xl font-bold">Audit log</h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Every activity in {member.family.name}, newest first. Entries marked{" "}
         <Badge color="red">admin</Badge> were performed by a platform admin impersonating the
         member.
@@ -44,12 +44,12 @@ export default async function AuditPage() {
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {entry.actorName || "System"} · {fmtDateTime(entry.createdAt)} ·{" "}
                       {entry.entityType}
                     </p>
                     {Object.keys(details).length > 0 && (
-                      <p className="mt-1 truncate font-mono text-xs text-zinc-400 dark:text-zinc-500">
+                      <p className="mt-1 truncate font-mono text-xs text-slate-400 dark:text-slate-500">
                         {JSON.stringify(details)}
                       </p>
                     )}
@@ -57,7 +57,7 @@ export default async function AuditPage() {
                       <a
                         href={proofLink}
                         target="_blank"
-                        className="mt-1 inline-block text-xs font-semibold text-emerald-600 dark:text-emerald-400"
+                        className="mt-1 inline-block text-xs font-semibold text-indigo-600 dark:text-indigo-400"
                       >
                         📸 View proof photo
                       </a>

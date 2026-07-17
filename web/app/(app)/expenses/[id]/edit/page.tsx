@@ -24,7 +24,7 @@ export default async function EditExpensePage({
   return (
     <div className="mx-auto max-w-lg">
       <h1 className="text-2xl font-bold">Edit Expense</h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Spent by {expense.member.emoji} {expense.member.name}. All edits are recorded in the audit
         log for parent review.
       </p>
@@ -85,7 +85,7 @@ export default async function EditExpensePage({
               type="file"
               accept="image/*"
               capture="environment"
-              className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
+              className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
             />
           </div>
           <button type="submit" className={`${buttonPrimary} w-full`}>Save Changes</button>

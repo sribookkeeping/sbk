@@ -53,7 +53,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </form>
         </div>
       )}
-      <header className="sticky top-0 z-10 border-b border-black/8 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-zinc-950/90">
+      <header className="sticky top-0 z-10 border-b border-black/8 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-slate-950/90">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
           <Link href="/dashboard" className="flex items-center gap-2 font-bold">
             <span className="text-xl">🏡</span>
@@ -79,7 +79,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <form action={logout}>
               <button
                 type="submit"
-                className="rounded-lg px-2 py-1 text-sm text-zinc-500 hover:bg-black/5 dark:text-zinc-400 dark:hover:bg-white/10"
+                className="rounded-lg px-2 py-1 text-sm text-slate-500 hover:bg-black/5 dark:text-slate-400 dark:hover:bg-white/10"
               >
                 Sign out
               </button>
@@ -91,7 +91,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
-      <footer className="border-t border-black/8 py-4 text-center text-xs text-zinc-400 dark:border-white/10">
+      <footer className="border-t border-black/8 py-4 text-center text-xs text-slate-400 dark:border-white/10">
         {member.family.name} · SriBookKeeping
       </footer>
     </>

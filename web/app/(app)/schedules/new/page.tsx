@@ -37,12 +37,12 @@ export default async function NewSchedulePage({
 
       {poolChores.length === 0 ? (
         <Card className="mt-2 text-center">
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             There are no active pool chores to schedule yet.
           </p>
           <Link
             href="/chores/new"
-            className="mt-2 inline-block font-semibold text-emerald-600 dark:text-emerald-400"
+            className="mt-2 inline-block font-semibold text-indigo-600 dark:text-indigo-400"
           >
             Add a chore to the pool first →
           </Link>
@@ -76,13 +76,13 @@ export default async function NewSchedulePage({
                 {WEEKDAY_LABELS.map((label, index) => (
                   <label
                     key={label}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-sm has-checked:border-emerald-500 has-checked:bg-emerald-50 dark:border-white/15 dark:has-checked:bg-emerald-950"
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-sm has-checked:border-indigo-500 has-checked:bg-indigo-50 dark:border-white/15 dark:has-checked:bg-indigo-950"
                   >
                     <input
                       type="checkbox"
                       name="weekdays"
                       value={index + 1}
-                      className="size-3.5 accent-emerald-600"
+                      className="size-3.5 accent-indigo-600"
                     />
                     {label}
                   </label>
@@ -131,7 +131,7 @@ export default async function NewSchedulePage({
               }
             />
 
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">{approvalHint}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{approvalHint}</p>
 
             <button type="submit" className={`${buttonPrimary} w-full`}>Submit Schedule</button>
           </form>

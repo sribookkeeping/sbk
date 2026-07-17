@@ -6,7 +6,7 @@
 // icons) so the app shell loads instantly and, when offline, shows a friendly
 // fallback page instead of the browser error.
 
-const CACHE = "sbk-static-v1";
+const CACHE = "sbk-static-v2";
 const OFFLINE_URL = "/offline";
 const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png"];
 

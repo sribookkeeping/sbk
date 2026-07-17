@@ -82,9 +82,9 @@ export default async function NewExpensePage({
               accept="image/*"
               capture="environment"
               required
-              className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
+              className={`${inputClass} file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white`}
             />
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               On a phone this opens the camera; on a computer, choose an image file.
             </p>
           </div>

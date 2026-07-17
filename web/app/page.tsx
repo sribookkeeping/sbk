@@ -46,7 +46,7 @@ export default async function LandingPage() {
       <div className="text-center">
         <div className="text-6xl">🏡</div>
         <h1 className="mt-4 text-4xl font-bold tracking-tight">SriBookKeeping</h1>
-        <p className="mx-auto mt-3 max-w-xl text-lg text-zinc-600 dark:text-zinc-300">
+        <p className="mx-auto mt-3 max-w-xl text-lg text-slate-600 dark:text-slate-300">
           Family chores, earnings, and expenses — with parent approvals baked in.
         </p>
         <div className="mt-8 flex justify-center gap-3">
@@ -67,7 +67,7 @@ export default async function LandingPage() {
           <Card key={feature.title}>
             <div className="text-2xl">{feature.emoji}</div>
             <h3 className="mt-2 font-semibold">{feature.title}</h3>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{feature.text}</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{feature.text}</p>
           </Card>
         ))}
       </div>

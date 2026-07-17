@@ -75,7 +75,7 @@ export default async function DashboardPage() {
       <h1 className="text-2xl font-bold">Hi, {member.name} 👋</h1>
 
       <Card className="mt-5 text-center">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">My Balance</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">My Balance</p>
         <p
           className={`mt-1 text-5xl font-bold tabular-nums ${
             mine.balanceCents < 0 ? "text-red-600 dark:text-red-400" : ""
@@ -90,11 +90,11 @@ export default async function DashboardPage() {
         )}
         <div className="mt-4 flex justify-center gap-8 text-sm">
           <span>
-            <span className="text-zinc-500 dark:text-zinc-400">Earned </span>
+            <span className="text-slate-500 dark:text-slate-400">Earned </span>
             <Money cents={mine.earnedCents} tone="positive" />
           </span>
           <span>
-            <span className="text-zinc-500 dark:text-zinc-400">Spent </span>
+            <span className="text-slate-500 dark:text-slate-400">Spent </span>
             <Money cents={mine.spentCents} tone={mine.spentCents > 0 ? "negative" : "plain"} />
           </span>
         </div>
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
         {openAssignments.length === 0 && (
           <EmptyState>
             Nothing on your plate —{" "}
-            <Link href="/chores" className="font-semibold text-emerald-600 dark:text-emerald-400">
+            <Link href="/chores" className="font-semibold text-indigo-600 dark:text-indigo-400">
               pick up a chore
             </Link>{" "}
             to start earning!
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
                     className={`text-xs ${
                       isOverdue(assignment.dueDate, assignment.status)
                         ? "font-semibold text-red-600 dark:text-red-400"
-                        : "text-zinc-500 dark:text-zinc-400"
+                        : "text-slate-500 dark:text-slate-400"
                     }`}
                   >
                     Due {fmtDateTime(assignment.dueDate)}
@@ -132,7 +132,7 @@ export default async function DashboardPage() {
                 <Money cents={assignment.baseAmountCents} tone="positive" />
                 <Link
                   href={`/assignments/${assignment.id}/complete`}
-                  className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+                  className="rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
                 >
                   Complete
                 </Link>
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
                 <span className="text-lg">{item.isEarning ? "➕" : "➖"}</span>
                 <div>
                   <p className="font-medium">{item.title}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {item.subtitle} · {fmtDate(item.date)}
                   </p>
                 </div>

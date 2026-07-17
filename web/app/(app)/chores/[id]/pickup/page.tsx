@@ -35,11 +35,11 @@ export default async function PickupChorePage({
       </div>
 
       <Card className="mt-2">
-        <div className="mb-5 flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-3 dark:bg-emerald-950">
+        <div className="mb-5 flex items-center justify-between rounded-xl bg-indigo-50 px-4 py-3 dark:bg-indigo-950">
           <div>
             <p className="font-semibold">{chore.title}</p>
             {chore.details && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">{chore.details}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{chore.details}</p>
             )}
           </div>
           <Money cents={chore.amountCents} tone="positive" className="text-lg" />

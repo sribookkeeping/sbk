@@ -15,7 +15,7 @@ export default async function RegisterPage({
       <div className="mb-8 text-center">
         <Link href="/" className="text-4xl">🏡</Link>
         <h1 className="mt-2 text-2xl font-bold">Set up your family</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           You&apos;ll be the head of the family — add your spouse and kids next.
         </p>
       </div>
@@ -44,9 +44,9 @@ export default async function RegisterPage({
         </form>
       </Card>
 
-      <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-emerald-600 dark:text-emerald-400">
+        <Link href="/login" className="font-semibold text-indigo-600 dark:text-indigo-400">
           Sign in
         </Link>
       </p>

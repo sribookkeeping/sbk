@@ -85,7 +85,7 @@ export default async function ChoresPage({
                 <li key={assignment.id} className="flex items-center justify-between gap-3 py-3">
                   <div>
                     <p className="font-medium">{assignment.chore.title}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {assignment.dueDate
                         ? `Due ${fmtDateTime(assignment.dueDate)} · unclaimed`
                         : "No due date · unclaimed"}
@@ -131,7 +131,7 @@ export default async function ChoresPage({
                     className={`text-xs ${
                       isOverdue(assignment.dueDate, assignment.status)
                         ? "font-semibold text-red-600 dark:text-red-400"
-                        : "text-zinc-500 dark:text-zinc-400"
+                        : "text-slate-500 dark:text-slate-400"
                     }`}
                   >
                     {isOverdue(assignment.dueDate, assignment.status) ? "Overdue — was due " : "Due "}
@@ -143,15 +143,15 @@ export default async function ChoresPage({
                 <Money cents={assignment.baseAmountCents} tone="positive" />
                 <Link
                   href={`/assignments/${assignment.id}/complete`}
-                  className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
+                  className="rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
                 >
                   Complete
                 </Link>
                 <details className="relative">
-                  <summary className="cursor-pointer list-none rounded-full border border-black/10 px-2 py-1.5 text-xs text-zinc-500 hover:bg-black/5 dark:border-white/15 dark:text-zinc-400">
+                  <summary className="cursor-pointer list-none rounded-full border border-black/10 px-2 py-1.5 text-xs text-slate-500 hover:bg-black/5 dark:border-white/15 dark:text-slate-400">
                     ⋯
                   </summary>
-                  <div className="absolute right-0 z-10 mt-1 flex w-40 flex-col rounded-xl border border-black/10 bg-white p-1 text-sm shadow-lg dark:border-white/15 dark:bg-zinc-900">
+                  <div className="absolute right-0 z-10 mt-1 flex w-40 flex-col rounded-xl border border-black/10 bg-white p-1 text-sm shadow-lg dark:border-white/15 dark:bg-slate-900">
                     <Link
                       href={`/assignments/${assignment.id}/edit`}
                       className="rounded-lg px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10"
@@ -190,14 +190,14 @@ export default async function ChoresPage({
               <div className="min-w-0">
                 <p className="font-medium">{chore.title}</p>
                 {chore.details && (
-                  <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{chore.details}</p>
+                  <p className="truncate text-xs text-slate-500 dark:text-slate-400">{chore.details}</p>
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <Money cents={chore.amountCents} tone="positive" />
                 <Link
                   href={`/chores/${chore.id}/pickup`}
-                  className="rounded-full border border-emerald-600 px-3 py-1.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                  className="rounded-full border border-indigo-600 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950"
                 >
                   Pick Up
                 </Link>
@@ -206,7 +206,7 @@ export default async function ChoresPage({
                     <Link
                       href={`/chores/${chore.id}/edit`}
                       title="Edit (needs both parents)"
-                      className="rounded-full px-2 py-1.5 text-xs text-zinc-400 hover:text-emerald-600"
+                      className="rounded-full px-2 py-1.5 text-xs text-slate-400 hover:text-indigo-600"
                     >
                       ✏️
                     </Link>
@@ -214,7 +214,7 @@ export default async function ChoresPage({
                       <button
                         type="submit"
                         title="Retire from pool"
-                        className="rounded-full px-2 py-1.5 text-xs text-zinc-400 hover:text-red-600"
+                        className="rounded-full px-2 py-1.5 text-xs text-slate-400 hover:text-red-600"
                       >
                         ✕
                       </button>
@@ -236,7 +236,7 @@ export default async function ChoresPage({
                 <li key={chore.id} className="flex items-center justify-between gap-3 py-3">
                   <div>
                     <p className="font-medium">{chore.title}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       Proposed by {chore.createdBy?.name ?? "someone"}
                     </p>
                   </div>
@@ -279,7 +279,7 @@ export default async function ChoresPage({
                         className={`text-xs ${
                           isOverdue(assignment.dueDate, assignment.status)
                             ? "font-semibold text-red-600 dark:text-red-400"
-                            : "text-zinc-500 dark:text-zinc-400"
+                            : "text-slate-500 dark:text-slate-400"
                         }`}
                       >
                         {assignment.assignee?.name}

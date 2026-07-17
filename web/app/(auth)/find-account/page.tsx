@@ -14,7 +14,7 @@ export default async function FindAccountPage({
       <div className="mb-8 text-center">
         <Link href="/" className="text-4xl">🏡</Link>
         <h1 className="mt-2 text-2xl font-bold">Find my account</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           We&apos;ll email you your member name, family, and sign-in address.
         </p>
       </div>
@@ -22,7 +22,7 @@ export default async function FindAccountPage({
       <Card>
         <ErrorBanner message={error} />
         {sent ? (
-          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+          <p className="text-sm text-indigo-700 dark:text-indigo-300">
             If that email is registered, your account details are on their way. (Locally, check{" "}
             <code>web/outbox/</code>.)
           </p>
@@ -37,8 +37,8 @@ export default async function FindAccountPage({
         )}
       </Card>
 
-      <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-        <Link href="/login" className="font-semibold text-emerald-600 dark:text-emerald-400">
+      <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+        <Link href="/login" className="font-semibold text-indigo-600 dark:text-indigo-400">
           Back to sign in
         </Link>
       </p>

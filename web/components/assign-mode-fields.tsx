@@ -22,18 +22,18 @@ export function AssignModeFields({
     <fieldset>
       <legend className="mb-2 text-sm font-semibold">Who does it?</legend>
       <div className="space-y-2">
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 px-3 py-3 has-checked:border-emerald-500 has-checked:bg-emerald-50 dark:border-white/15 dark:has-checked:bg-emerald-950">
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 px-3 py-3 has-checked:border-indigo-500 has-checked:bg-indigo-50 dark:border-white/15 dark:has-checked:bg-indigo-950">
           <input
             type="radio"
             name="assignMode"
             value="assign"
             checked={mode === "assign"}
             onChange={() => setMode("assign")}
-            className="mt-1 size-4 accent-emerald-600"
+            className="mt-1 size-4 accent-indigo-600"
           />
           <span>
             <span className="block text-sm font-medium">👤 Assign to specific members</span>
-            <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="block text-xs text-slate-500 dark:text-slate-400">
               Pick who is responsible below.
             </span>
           </span>
@@ -49,7 +49,7 @@ export function AssignModeFields({
           />
           <span>
             <span className="block text-sm font-medium">🙋 Open for anyone to claim</span>
-            <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="block text-xs text-slate-500 dark:text-slate-400">
               First to claim it earns it. With a due date, the family is reminded to claim it a
               day ahead — and if nobody does, it&apos;s auto-assigned fairly. Without one, it stays
               up for grabs.

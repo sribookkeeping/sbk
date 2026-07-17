@@ -39,7 +39,7 @@ export default async function SkipAssignmentPage({
   return (
     <div className="mx-auto max-w-lg">
       <h1 className="text-2xl font-bold">Skip or Reschedule</h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         &quot;{assignment.chore.title}&quot;
         {assignment.dueDate && ` — due ${fmtDateTime(assignment.dueDate)}`}. {hint}
       </p>
@@ -51,12 +51,12 @@ export default async function SkipAssignmentPage({
         <form action={requestSkip.bind(null, assignment.id)} className="space-y-5">
           <fieldset className="space-y-2">
             <legend className="mb-1 text-sm font-semibold">What do you need?</legend>
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-black/10 px-3 py-3 has-checked:border-emerald-500 has-checked:bg-emerald-50 dark:border-white/15 dark:has-checked:bg-emerald-950">
-              <input type="radio" name="mode" value="skip" defaultChecked className="size-4 accent-emerald-600" />
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-black/10 px-3 py-3 has-checked:border-indigo-500 has-checked:bg-indigo-50 dark:border-white/15 dark:has-checked:bg-indigo-950">
+              <input type="radio" name="mode" value="skip" defaultChecked className="size-4 accent-indigo-600" />
               <span className="text-sm font-medium">⏭️ Skip this one entirely</span>
             </label>
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-black/10 px-3 py-3 has-checked:border-emerald-500 has-checked:bg-emerald-50 dark:border-white/15 dark:has-checked:bg-emerald-950">
-              <input type="radio" name="mode" value="reschedule" className="size-4 accent-emerald-600" />
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-black/10 px-3 py-3 has-checked:border-indigo-500 has-checked:bg-indigo-50 dark:border-white/15 dark:has-checked:bg-indigo-950">
+              <input type="radio" name="mode" value="reschedule" className="size-4 accent-indigo-600" />
               <span className="text-sm font-medium">📆 Move it to a new date</span>
             </label>
           </fieldset>

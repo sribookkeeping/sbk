@@ -42,7 +42,7 @@ export default async function AdminPage({
         <Card key={family.id} className="mb-4">
           <p className="font-semibold">
             {family.name}{" "}
-            <span className="text-xs font-normal text-zinc-400">
+            <span className="text-xs font-normal text-slate-400">
               · {family.members.length} members · created {fmtDateTime(family.createdAt)}
             </span>
           </p>
@@ -54,7 +54,7 @@ export default async function AdminPage({
                   <span className="font-medium">
                     {m.name} {m.isHead && "👑"} {m.isPlatformAdmin && "🛡️"}
                   </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     {roleLabel(m.role)}
                     {m.email ? ` · ${m.email}` : ""}
                   </span>
@@ -78,7 +78,7 @@ export default async function AdminPage({
           {recent.map((entry) => (
             <li key={entry.id} className="py-2 text-sm">
               <span className="font-medium">{auditLabel(entry.action)}</span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 {" "}
                 · {entry.actorName || "System"} · {familyName.get(entry.familyId) ?? "?"} ·{" "}
                 {fmtDateTime(entry.createdAt)}

@@ -51,7 +51,7 @@ export function InstallButton() {
       <button
         type="button"
         onClick={() => deferred.prompt()}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-600 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950"
       >
         📲 Install app
       </button>
@@ -60,7 +60,7 @@ export function InstallButton() {
 
   if (iosHint) {
     return (
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs text-slate-500 dark:text-slate-400">
         📲 To install: tap <strong>Share</strong> → <strong>Add to Home Screen</strong>.
       </p>
     );

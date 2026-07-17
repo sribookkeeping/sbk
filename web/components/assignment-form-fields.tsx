@@ -16,14 +16,14 @@ export function AssigneePicker({
       {members.map((m) => (
         <label
           key={m.id}
-          className="flex cursor-pointer items-center gap-3 rounded-xl border border-black/10 px-3 py-2 has-checked:border-emerald-500 has-checked:bg-emerald-50 dark:border-white/15 dark:has-checked:bg-emerald-950"
+          className="flex cursor-pointer items-center gap-3 rounded-xl border border-black/10 px-3 py-2 has-checked:border-indigo-500 has-checked:bg-indigo-50 dark:border-white/15 dark:has-checked:bg-indigo-950"
         >
           <input
             type="checkbox"
             name="assignees"
             value={m.id}
             defaultChecked={defaultSelectedIds.includes(m.id)}
-            className="size-4 accent-emerald-600"
+            className="size-4 accent-indigo-600"
           />
           <Avatar emoji={m.emoji} isParent={m.role === "PARENT"} size={28} />
           <span className="text-sm font-medium">{m.name}</span>

@@ -30,20 +30,20 @@ export default async function LoginPage({
           </div>
           <button type="submit" className={`${buttonPrimary} w-full`}>Sign In</button>
         </form>
-        <p className="mt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
-          <Link href="/forgot-password" className="font-semibold text-emerald-600 dark:text-emerald-400">
+        <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
+          <Link href="/forgot-password" className="font-semibold text-indigo-600 dark:text-indigo-400">
             Forgot password?
           </Link>
           {" · "}
-          <Link href="/find-account" className="font-semibold text-emerald-600 dark:text-emerald-400">
+          <Link href="/find-account" className="font-semibold text-indigo-600 dark:text-indigo-400">
             Find my account
           </Link>
         </p>
       </Card>
 
-      <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
         New here?{" "}
-        <Link href="/register" className="font-semibold text-emerald-600 dark:text-emerald-400">
+        <Link href="/register" className="font-semibold text-indigo-600 dark:text-indigo-400">
           Set up your family
         </Link>
       </p>

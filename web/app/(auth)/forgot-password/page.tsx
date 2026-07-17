@@ -19,7 +19,7 @@ export default async function ForgotPasswordPage({
       <Card>
         <ErrorBanner message={error} />
         {sent ? (
-          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+          <p className="text-sm text-indigo-700 dark:text-indigo-300">
             If that email is registered, a reset link is on its way. (Locally, check{" "}
             <code>web/outbox/</code>.) The link is valid for 1 hour.
           </p>
@@ -34,12 +34,12 @@ export default async function ForgotPasswordPage({
         )}
       </Card>
 
-      <p className="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-        <Link href="/login" className="font-semibold text-emerald-600 dark:text-emerald-400">
+      <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+        <Link href="/login" className="font-semibold text-indigo-600 dark:text-indigo-400">
           Back to sign in
         </Link>
         {" · "}
-        <Link href="/find-account" className="font-semibold text-emerald-600 dark:text-emerald-400">
+        <Link href="/find-account" className="font-semibold text-indigo-600 dark:text-indigo-400">
           Find my account
         </Link>
       </p>

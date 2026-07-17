@@ -44,10 +44,10 @@ export default async function EditAssignmentPage({
       </div>
 
       <Card className="mt-2">
-        <div className="mb-5 flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-3 dark:bg-emerald-950">
+        <div className="mb-5 flex items-center justify-between rounded-xl bg-indigo-50 px-4 py-3 dark:bg-indigo-950">
           <div>
             <p className="font-semibold">{assignment.chore.title}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {assignment.assignee?.name ?? "Unclaimed"}
             </p>
           </div>

@@ -18,8 +18,8 @@ export function NavLinks({ items }: { items: NavItem[] }) {
             href={item.href}
             className={`relative flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium whitespace-nowrap ${
               active
-                ? "bg-emerald-600 text-white"
-                : "text-zinc-600 hover:bg-black/5 dark:text-zinc-300 dark:hover:bg-white/10"
+                ? "bg-indigo-600 text-white"
+                : "text-slate-600 hover:bg-black/5 dark:text-slate-300 dark:hover:bg-white/10"
             }`}
           >
             <span aria-hidden>{item.emoji}</span>

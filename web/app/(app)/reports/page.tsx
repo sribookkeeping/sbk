@@ -51,13 +51,13 @@ export default async function ReportsPage({
       <div className="mt-4">
         <ErrorBanner message={error} />
         {sent === "now" && (
-          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+          <div className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
             Report emailed to {member.email}. (Locally, emails land in{" "}
             <code>web/outbox/</code>.)
           </div>
         )}
         {sent === "pref" && (
-          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+          <div className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950 dark:text-indigo-300">
             Report schedule updated.
           </div>
         )}
@@ -65,7 +65,7 @@ export default async function ReportsPage({
 
       <Card>
         <p className="text-sm font-semibold">📬 Email reports</p>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           {member.email
             ? `Balance sheets go to ${member.email} on the schedule you pick.`
             : "Add an email to your profile to receive reports."}
@@ -109,8 +109,8 @@ export default async function ReportsPage({
             href={`/reports?period=${p.value}`}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
               period === p.value
-                ? "bg-emerald-600 text-white"
-                : "border border-black/10 text-zinc-600 hover:bg-black/5 dark:border-white/15 dark:text-zinc-300"
+                ? "bg-indigo-600 text-white"
+                : "border border-black/10 text-slate-600 hover:bg-black/5 dark:border-white/15 dark:text-slate-300"
             }`}
           >
             {p.label}
@@ -119,13 +119,13 @@ export default async function ReportsPage({
       </div>
 
       <Card>
-        <p className="mb-3 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
           {fmtDate(sheet.periodStart)} – {fmtDate(sheet.periodEnd)}
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-black/10 text-left text-xs text-zinc-500 uppercase dark:border-white/15 dark:text-zinc-400">
+              <tr className="border-b border-black/10 text-left text-xs text-slate-500 uppercase dark:border-white/15 dark:text-slate-400">
                 <th className="py-2 pr-3">Member</th>
                 <th className="py-2 pr-3 text-right">Chores</th>
                 <th className="py-2 pr-3 text-right">Earned</th>
@@ -141,7 +141,7 @@ export default async function ReportsPage({
                 <tr key={m.memberId} className="border-b border-black/5 dark:border-white/10">
                   <td className="py-2 pr-3">
                     {m.emoji} {m.name}{" "}
-                    <span className="text-xs text-zinc-400">({roleLabel(m.role)})</span>
+                    <span className="text-xs text-slate-400">({roleLabel(m.role)})</span>
                   </td>
                   <td className="py-2 pr-3 text-right tabular-nums">{m.choresCompleted}</td>
                   <td className="py-2 pr-3 text-right">
@@ -196,7 +196,7 @@ export default async function ReportsPage({
             <li key={index} className="flex items-center justify-between gap-3 py-2 text-sm">
               <span>
                 {line.title}{" "}
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
                   · {line.memberName} · {fmtDate(line.date)}
                 </span>
               </span>
@@ -214,7 +214,7 @@ export default async function ReportsPage({
             <li key={index} className="flex items-center justify-between gap-3 py-2 text-sm">
               <span>
                 {line.title}{" "}
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
                   · {line.memberName} · {fmtDate(line.date)}
                 </span>
               </span>

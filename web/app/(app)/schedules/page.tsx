@@ -39,7 +39,7 @@ export default async function SchedulesPage({
           + New Schedule
         </Link>
       </div>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Recurring chores start once <strong>both parents</strong> approve.
       </p>
       <div className="mt-4">
@@ -61,10 +61,10 @@ export default async function SchedulesPage({
                   <p className="font-semibold">{schedule.chore.title}</p>
                   <Badge color={badge.color}>{badge.label}</Badge>
                 </div>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                   {recurrenceDescription(schedule)} · remind at {hourLabel(schedule.reminderHour)}
                 </p>
-                <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   {schedule.assignees.length === 0
                     ? "🙋 Open to anyone — family is reminded to claim, then it's auto-assigned"
                     : `👤 ${schedule.assignees.map((a) => a.member.name).join(", ")}`}
@@ -85,7 +85,7 @@ export default async function SchedulesPage({
                     )}
                     {schedule.status === ScheduleStatus.PAUSED && (
                       <form action={resumeSchedule.bind(null, schedule.id)}>
-                        <button className="text-xs font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+                        <button className="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
                           Resume
                         </button>
                       </form>

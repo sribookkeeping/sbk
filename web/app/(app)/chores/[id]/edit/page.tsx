@@ -28,7 +28,7 @@ export default async function EditChorePage({
   return (
     <div className="mx-auto max-w-lg">
       <h1 className="text-2xl font-bold">Edit Chore</h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{hint}</p>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{hint}</p>
       <div className="mt-4">
         <ErrorBanner message={error} />
       </div>
@@ -62,7 +62,7 @@ export default async function EditChorePage({
 
       <Card className="mt-4">
         <p className="text-sm font-semibold text-red-600 dark:text-red-400">Danger zone</p>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Deleting cancels open assignments and pauses schedules. Completed history and earnings
           are kept. {otherParents.length > 0 && "Needs the other parent's approval."}
         </p>

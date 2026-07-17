@@ -35,7 +35,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">🎉 {event.title}</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {event.eventDate ? `${fmtDate(event.eventDate)} · ` : ""}
             started by {event.createdBy?.name ?? "someone"}
           </p>
@@ -49,7 +49,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         ) : null}
       </div>
       {event.details && (
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">{event.details}</p>
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">{event.details}</p>
       )}
 
       {!event.revealedAt &&
@@ -76,7 +76,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               <li key={chore.id} className="flex items-center justify-between gap-3 py-3">
                 <div>
                   <p className="font-medium">{chore.title}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {who.length > 0 ? who.join(", ") : "not assigned yet"}
                     {done.length > 0 && ` · ${done.length} done`}
                     {open.length > 0 && ` · ${open.length} open`}
@@ -114,11 +114,11 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                 <div
                   className={`max-w-[75%] rounded-2xl px-3 py-2 ${
                     mine
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-indigo-600 text-white"
                       : "bg-black/5 dark:bg-white/10"
                   }`}
                 >
-                  <p className={`text-xs font-semibold ${mine ? "text-emerald-100" : "text-zinc-500 dark:text-zinc-400"}`}>
+                  <p className={`text-xs font-semibold ${mine ? "text-indigo-100" : "text-slate-500 dark:text-slate-400"}`}>
                     {message.author?.name ?? "Someone"} ·{" "}
                     {fmtDateTime(message.createdAt)}
                   </p>

@@ -46,8 +46,8 @@ export default async function NotificationsPage() {
                     <span className="ml-2 inline-block size-2 rounded-full bg-red-500 align-middle" />
                   )}
                 </p>
-                <p className="text-sm text-zinc-600 dark:text-zinc-300">{n.body}</p>
-                <p className="mt-0.5 text-xs text-zinc-400">{fmtDateTime(n.createdAt)}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-300">{n.body}</p>
+                <p className="mt-0.5 text-xs text-slate-400">{fmtDateTime(n.createdAt)}</p>
               </div>
             </li>
           ))}

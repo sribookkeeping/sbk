@@ -73,10 +73,10 @@ export default async function NewChorePage({
           </div>
 
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 px-3 py-3 dark:border-white/15">
-            <input type="checkbox" name="addToPool" className="mt-0.5 size-4 accent-emerald-600" />
+            <input type="checkbox" name="addToPool" className="mt-0.5 size-4 accent-indigo-600" />
             <span>
               <span className="block text-sm font-medium">Add to family chore pool</span>
-              <span className="block text-xs text-zinc-500 dark:text-zinc-400">{poolHint}</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">{poolHint}</span>
             </span>
           </label>
 
@@ -86,7 +86,7 @@ export default async function NewChorePage({
             assignFields={
               <>
                 <AssigneePicker members={visibleMembers} />
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Optional if the chore only goes to the pool. For schedules, these are the fixed
                   assignees for every occurrence.
                 </p>
@@ -113,13 +113,13 @@ export default async function NewChorePage({
                   {WEEKDAY_LABELS.map((label, index) => (
                     <label
                       key={label}
-                      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-sm has-checked:border-emerald-500 has-checked:bg-emerald-50 dark:border-white/15 dark:has-checked:bg-emerald-950"
+                      className="flex cursor-pointer items-center gap-1.5 rounded-full border border-black/10 px-3 py-1.5 text-sm has-checked:border-indigo-500 has-checked:bg-indigo-50 dark:border-white/15 dark:has-checked:bg-indigo-950"
                     >
                       <input
                         type="checkbox"
                         name="weekdays"
                         value={index + 1}
-                        className="size-3.5 accent-emerald-600"
+                        className="size-3.5 accent-indigo-600"
                       />
                       {label}
                     </label>

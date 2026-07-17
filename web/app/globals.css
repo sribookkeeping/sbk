@@ -1,26 +1,24 @@
 @import "tailwindcss";
 
+/* The app ships one look: dark navy (fintech). The `dark` class is pinned on
+   <html> in the root layout, so every dark: variant is always active. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617; /* slate-950 — page canvas */
+  --foreground: #f1f5f9; /* slate-100 */
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-app-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-app-sans), ui-sans-serif, system-ui, sans-serif;
 }

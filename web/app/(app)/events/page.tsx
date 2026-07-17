@@ -17,7 +17,7 @@ export default async function EventsPage() {
           + New Event
         </Link>
       </div>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Brainstorm together — each event has its own group chat and linked chores. Surprise
         planning? Exclude the guest of honor and they&apos;ll never see it. 🤫
       </p>
@@ -37,7 +37,7 @@ export default async function EventsPage() {
                 >
                   <div>
                     <p className="font-medium">🎉 {event.title}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {event.eventDate ? `${fmtDate(event.eventDate)} · ` : ""}
                       {event.messages.length} message{event.messages.length === 1 ? "" : "s"} ·{" "}
                       {event.chores.length} chore{event.chores.length === 1 ? "" : "s"} · started by{" "}

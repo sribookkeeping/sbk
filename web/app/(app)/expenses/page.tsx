@@ -58,7 +58,7 @@ export default async function ExpensesPage({
                     <span className="text-xl">{category.emoji}</span>
                     <div>
                       <p className="font-medium">{expense.title}</p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {expense.member.name} · {fmtDate(expense.date)} · 🧾 receipt attached
                       </p>
                     </div>

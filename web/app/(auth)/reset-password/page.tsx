@@ -21,9 +21,9 @@ export default async function ResetPasswordPage({
       <Card>
         <ErrorBanner message={error} />
         {!valid ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             This reset link is invalid or has expired.{" "}
-            <Link href="/forgot-password" className="font-semibold text-emerald-600 dark:text-emerald-400">
+            <Link href="/forgot-password" className="font-semibold text-indigo-600 dark:text-indigo-400">
               Request a new one →
             </Link>
           </p>

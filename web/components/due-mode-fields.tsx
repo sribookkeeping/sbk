@@ -48,7 +48,7 @@ export function DueModeFields({
         {OPTIONS.map((option) => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 px-3 py-3 has-checked:border-emerald-500 has-checked:bg-emerald-50 dark:border-white/15 dark:has-checked:bg-emerald-950"
+            className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 px-3 py-3 has-checked:border-indigo-500 has-checked:bg-indigo-50 dark:border-white/15 dark:has-checked:bg-indigo-950"
           >
             <input
               type="radio"
@@ -56,13 +56,13 @@ export function DueModeFields({
               value={option.value}
               checked={mode === option.value}
               onChange={() => setMode(option.value)}
-              className="mt-1 size-4 accent-emerald-600"
+              className="mt-1 size-4 accent-indigo-600"
             />
             <span>
               <span className="block text-sm font-medium">
                 {option.emoji} {option.title}
               </span>
-              <span className="block text-xs text-zinc-500 dark:text-zinc-400">{option.hint}</span>
+              <span className="block text-xs text-slate-500 dark:text-slate-400">{option.hint}</span>
             </span>
           </label>
         ))}

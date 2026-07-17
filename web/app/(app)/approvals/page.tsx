@@ -58,7 +58,7 @@ function RequestRow({ request, actions }: { request: FamilyRequest; actions: boo
           <span className="text-xl">{TYPE_EMOJI[request.type] ?? "❓"}</span>
           <div>
             <p className="font-medium">{requestHeadline(request)}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {request.requestedBy?.name ?? "Someone"} · {fmtDateTime(request.createdAt)}
             </p>
             {proposalDetail(request) && (
@@ -67,7 +67,7 @@ function RequestRow({ request, actions }: { request: FamilyRequest; actions: boo
               </p>
             )}
             {request.note && (
-              <p className="mt-1 text-xs text-zinc-500 italic dark:text-zinc-400">
+              <p className="mt-1 text-xs text-slate-500 italic dark:text-slate-400">
                 Reason: {request.note}
               </p>
             )}
@@ -83,7 +83,7 @@ function RequestRow({ request, actions }: { request: FamilyRequest; actions: boo
       {actions && (
         <div className="mt-3 flex gap-2">
           <form action={approve.bind(null, request.id)} className="flex-1">
-            <button className="w-full rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+            <button className="w-full rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
               ✓ Approve
             </button>
           </form>

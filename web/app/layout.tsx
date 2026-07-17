@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PwaRegister } from "@/components/pwa-register";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const appSans = Space_Grotesk({
+  variable: "--font-app-sans",
   subsets: ["latin"],
 });
 
@@ -31,12 +31,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Emerald in light, near-black in dark — colors the Android status bar and
-  // the installed app's title bar.
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#059669" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
-  ],
+  // Navy — colors the Android status bar and the installed app's title bar.
+  themeColor: "#0f172a",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -50,9 +46,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${appSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         {children}
         <PwaRegister />
       </body>
