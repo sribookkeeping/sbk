@@ -34,11 +34,11 @@ export default async function ExpenseDetailPage({
         {canTouch && (
           <div className="flex gap-2">
             <Link href={`/expenses/${expense.id}/edit`} className={buttonSecondary}>
-              ✏️ Edit
+              Edit
             </Link>
             <form action={deleteExpense.bind(null, expense.id)}>
               <button type="submit" className={buttonDanger}>
-                🗑 Delete
+                Delete
               </button>
             </form>
           </div>

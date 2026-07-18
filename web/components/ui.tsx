@@ -9,7 +9,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-black/8 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-slate-900 ${className}`}
+      className={`rounded-2xl border border-black/8 bg-white p-5 dark:border-white/8 dark:bg-slate-900 ${className}`}
     >
       {children}
     </div>
@@ -90,9 +90,57 @@ export function EmptyState({ children }: { children: React.ReactNode }) {
 
 export function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mt-8 mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
+    <h2 className="mt-8 mb-2.5 px-1 text-[11px] font-semibold tracking-[0.16em] text-slate-500 uppercase dark:text-slate-500">
       {children}
     </h2>
+  );
+}
+
+export function PageHeader({
+  title,
+  sub,
+  action,
+}: {
+  title: string;
+  sub?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        {sub && <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{sub}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+const TILE_TONES: Record<string, string> = {
+  indigo: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
+  emerald: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  red: "bg-red-500/15 text-red-600 dark:text-red-400",
+  amber: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  slate: "bg-slate-500/15 text-slate-500 dark:text-slate-300",
+};
+
+/** Leading icon tile for transaction-style list rows. */
+export function Tile({
+  tone = "slate",
+  size = 40,
+  children,
+}: {
+  tone?: keyof typeof TILE_TONES | string;
+  size?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center rounded-xl ${TILE_TONES[tone] ?? TILE_TONES.slate}`}
+      style={{ width: size, height: size, fontSize: size * 0.45 }}
+    >
+      {children}
+    </span>
   );
 }
 

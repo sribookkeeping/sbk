@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand";
 import { resetPassword } from "@/lib/actions/auth";
 import { peekResetToken } from "@/lib/auth";
 import { buttonPrimary, Card, ErrorBanner, inputClass } from "@/components/ui";
@@ -14,7 +15,7 @@ export default async function ResetPasswordPage({
   return (
     <main className="mx-auto w-full max-w-sm px-6 py-16">
       <div className="mb-8 text-center">
-        <Link href="/" className="text-4xl">🏡</Link>
+        <Link href="/" className="inline-flex"><BrandMark size={48} /></Link>
         <h1 className="mt-2 text-2xl font-bold">Set a new password</h1>
       </div>
 

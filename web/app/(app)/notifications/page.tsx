@@ -3,12 +3,16 @@ import { listNotifications } from "@/lib/notifications";
 import { markNotificationsRead } from "@/lib/actions/notifications";
 import { fmtDateTime } from "@/lib/format";
 import { NotificationType } from "@/lib/types";
-import { buttonSecondary, Card, EmptyState } from "@/components/ui";
+import { buttonSecondary, Card, EmptyState, PageHeader, Tile } from "@/components/ui";
+import { IconBell, IconListChecks, IconZap } from "@/components/icons";
 
-const TYPE_EMOJI: Record<string, string> = {
-  [NotificationType.CLAIM_REMINDER]: "🙋",
-  [NotificationType.AUTO_ASSIGNED]: "🎯",
-  [NotificationType.GENERAL]: "📣",
+const TYPE_TILE: Record<string, { tone: string; icon: React.ReactNode }> = {
+  [NotificationType.CLAIM_REMINDER]: { tone: "amber", icon: <IconZap className="h-5 w-5" /> },
+  [NotificationType.AUTO_ASSIGNED]: {
+    tone: "indigo",
+    icon: <IconListChecks className="h-5 w-5" />,
+  },
+  [NotificationType.GENERAL]: { tone: "slate", icon: <IconBell className="h-5 w-5" /> },
 };
 
 export default async function NotificationsPage() {
@@ -18,16 +22,18 @@ export default async function NotificationsPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Notifications</h1>
-        {hasUnread && (
-          <form action={markNotificationsRead}>
-            <button type="submit" className={buttonSecondary}>
-              Mark all read
-            </button>
-          </form>
-        )}
-      </div>
+      <PageHeader
+        title="Notifications"
+        action={
+          hasUnread ? (
+            <form action={markNotificationsRead}>
+              <button type="submit" className={buttonSecondary}>
+                Mark all read
+              </button>
+            </form>
+          ) : undefined
+        }
+      />
 
       <Card className="mt-6">
         {notifications.length === 0 && (
@@ -35,22 +41,27 @@ export default async function NotificationsPage() {
             Nothing yet. You&apos;ll hear about chores up for grabs and auto-assignments here.
           </EmptyState>
         )}
-        <ul className="divide-y divide-black/5 dark:divide-white/10">
-          {notifications.map((n) => (
-            <li key={n.id} className={`flex gap-3 py-3 ${n.readAt ? "opacity-60" : ""}`}>
-              <span className="text-xl">{TYPE_EMOJI[n.type] ?? "📣"}</span>
-              <div>
-                <p className="font-medium">
-                  {n.title}
-                  {!n.readAt && (
-                    <span className="ml-2 inline-block size-2 rounded-full bg-red-500 align-middle" />
-                  )}
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-300">{n.body}</p>
-                <p className="mt-0.5 text-xs text-slate-400">{fmtDateTime(n.createdAt)}</p>
-              </div>
-            </li>
-          ))}
+        <ul className="divide-y divide-black/5 dark:divide-white/5">
+          {notifications.map((n) => {
+            const tile = TYPE_TILE[n.type] ?? TYPE_TILE[NotificationType.GENERAL];
+            return (
+              <li key={n.id} className={`flex gap-3 py-3 ${n.readAt ? "opacity-60" : ""}`}>
+                <Tile tone={tile.tone}>{tile.icon}</Tile>
+                <div className="min-w-0">
+                  <p className="font-medium">
+                    {n.title}
+                    {!n.readAt && (
+                      <span className="ml-2 inline-block size-2 rounded-full bg-indigo-500 align-middle" />
+                    )}
+                  </p>
+                  <p className="text-sm text-slate-600 dark:text-slate-300">{n.body}</p>
+                  <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                    {fmtDateTime(n.createdAt)}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </Card>
     </div>

@@ -66,8 +66,8 @@ export default async function SchedulesPage({
                 </p>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   {schedule.assignees.length === 0
-                    ? "🙋 Open to anyone — family is reminded to claim, then it's auto-assigned"
-                    : `👤 ${schedule.assignees.map((a) => a.member.name).join(", ")}`}
+                    ? "Open to anyone — family is reminded to claim, then it's auto-assigned"
+                    : `${schedule.assignees.map((a) => a.member.name).join(", ")}`}
                 </p>
                 {schedule.status === ScheduleStatus.PENDING_APPROVAL && waitingOn.length > 0 && (
                   <p className="mt-1 text-xs font-medium text-amber-600 dark:text-amber-400">

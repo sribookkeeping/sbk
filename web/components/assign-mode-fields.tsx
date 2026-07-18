@@ -32,7 +32,7 @@ export function AssignModeFields({
             className="mt-1 size-4 accent-indigo-600"
           />
           <span>
-            <span className="block text-sm font-medium">👤 Assign to specific members</span>
+            <span className="block text-sm font-medium">Assign to specific members</span>
             <span className="block text-xs text-slate-500 dark:text-slate-400">
               Pick who is responsible below.
             </span>
@@ -48,7 +48,7 @@ export function AssignModeFields({
             className="mt-1 size-4 accent-amber-500"
           />
           <span>
-            <span className="block text-sm font-medium">🙋 Open for anyone to claim</span>
+            <span className="block text-sm font-medium">Open for anyone to claim</span>
             <span className="block text-xs text-slate-500 dark:text-slate-400">
               First to claim it earns it. With a due date, the family is reminded to claim it a
               day ahead — and if nobody does, it&apos;s auto-assigned fairly. Without one, it stays

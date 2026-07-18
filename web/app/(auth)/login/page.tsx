@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand";
 import { login } from "@/lib/actions/auth";
 import { buttonPrimary, Card, ErrorBanner, inputClass } from "@/components/ui";
 import { InstallButton } from "@/components/install-button";
@@ -13,7 +14,7 @@ export default async function LoginPage({
   return (
     <main className="mx-auto w-full max-w-sm px-6 py-16">
       <div className="mb-8 text-center">
-        <Link href="/" className="text-4xl">🏡</Link>
+        <Link href="/" className="inline-flex"><BrandMark size={48} /></Link>
         <h1 className="mt-2 text-2xl font-bold">Sign in</h1>
       </div>
 

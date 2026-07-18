@@ -14,15 +14,24 @@ import { fmtMoney } from "@/lib/format";
 import { approve, reject } from "@/lib/actions/approvals";
 import { fmtDateTime } from "@/lib/format";
 import { ApprovalStatus, ApprovalType } from "@/lib/types";
-import { Badge, Card, EmptyState, Money, SectionTitle } from "@/components/ui";
+import { Badge, Card, EmptyState, Money, PageHeader, SectionTitle, Tile } from "@/components/ui";
+import {
+  IconArrowUpRight,
+  IconCalendar,
+  IconCheckCircle,
+  IconListChecks,
+  IconPencil,
+  IconSkip,
+  IconTrash,
+} from "@/components/icons";
 
-const TYPE_EMOJI: Record<string, string> = {
-  [ApprovalType.POOL_CHORE]: "🧹",
-  [ApprovalType.SCHEDULE]: "📅",
-  [ApprovalType.EXTRA_PAY]: "💪",
-  [ApprovalType.CHORE_EDIT]: "✏️",
-  [ApprovalType.CHORE_DELETE]: "🗑",
-  [ApprovalType.ASSIGNMENT_SKIP]: "⏭️",
+const TYPE_TILE: Record<string, { tone: string; icon: React.ReactNode }> = {
+  [ApprovalType.POOL_CHORE]: { tone: "indigo", icon: <IconListChecks className="h-5 w-5" /> },
+  [ApprovalType.SCHEDULE]: { tone: "indigo", icon: <IconCalendar className="h-5 w-5" /> },
+  [ApprovalType.EXTRA_PAY]: { tone: "emerald", icon: <IconArrowUpRight className="h-5 w-5" /> },
+  [ApprovalType.CHORE_EDIT]: { tone: "slate", icon: <IconPencil className="h-5 w-5" /> },
+  [ApprovalType.CHORE_DELETE]: { tone: "red", icon: <IconTrash className="h-5 w-5" /> },
+  [ApprovalType.ASSIGNMENT_SKIP]: { tone: "amber", icon: <IconSkip className="h-5 w-5" /> },
 };
 
 /** Human-readable summary of what a proposal would change. */
@@ -55,7 +64,9 @@ function RequestRow({ request, actions }: { request: FamilyRequest; actions: boo
     <li className="py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="text-xl">{TYPE_EMOJI[request.type] ?? "❓"}</span>
+          <Tile tone={TYPE_TILE[request.type]?.tone ?? "slate"}>
+            {TYPE_TILE[request.type]?.icon ?? <IconCheckCircle className="h-5 w-5" />}
+          </Tile>
           <div>
             <p className="font-medium">{requestHeadline(request)}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -83,13 +94,13 @@ function RequestRow({ request, actions }: { request: FamilyRequest; actions: boo
       {actions && (
         <div className="mt-3 flex gap-2">
           <form action={approve.bind(null, request.id)} className="flex-1">
-            <button className="w-full rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-              ✓ Approve
+            <button className="w-full rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+              Approve
             </button>
           </form>
           <form action={reject.bind(null, request.id)} className="flex-1">
             <button className="w-full rounded-xl border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950">
-              ✕ Reject
+              Reject
             </button>
           </form>
         </div>
@@ -113,7 +124,7 @@ export default async function ApprovalsPage() {
 
   return (
     <>
-      <h1 className="text-2xl font-bold">Approvals</h1>
+      <PageHeader title="Approvals" />
 
       {needsMe.length === 0 && waiting.length === 0 && decided.length === 0 && (
         <Card className="mt-6">

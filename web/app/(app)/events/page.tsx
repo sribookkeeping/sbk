@@ -19,7 +19,7 @@ export default async function EventsPage() {
       </div>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         Brainstorm together — each event has its own group chat and linked chores. Surprise
-        planning? Exclude the guest of honor and they&apos;ll never see it. 🤫
+        planning? Exclude the guest of honor and they&apos;ll never see it.
       </p>
 
       <Card className="mt-5">
@@ -36,7 +36,7 @@ export default async function EventsPage() {
                   className="flex items-center justify-between gap-3 py-3 hover:bg-black/2 dark:hover:bg-white/5"
                 >
                   <div>
-                    <p className="font-medium">🎉 {event.title}</p>
+                    <p className="font-medium">{event.title}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {event.eventDate ? `${fmtDate(event.eventDate)} · ` : ""}
                       {event.messages.length} message{event.messages.length === 1 ? "" : "s"} ·{" "}
@@ -44,7 +44,7 @@ export default async function EventsPage() {
                       {event.createdBy?.name ?? "someone"}
                     </p>
                   </div>
-                  {secretCount > 0 && <Badge color="indigo">🤫 Surprise</Badge>}
+                  {secretCount > 0 && <Badge color="indigo">Surprise</Badge>}
                 </Link>
               </li>
             );

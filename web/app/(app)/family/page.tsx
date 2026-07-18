@@ -90,7 +90,7 @@ export default async function FamilyPage({
                     <Avatar emoji={m.emoji} isParent={m.role === Role.PARENT} size={40} />
                     <div>
                       <p className="font-medium">
-                        {m.name} {m.isHead && "👑"}
+                        {m.name}{m.isHead && " · head"}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {roleLabel(m.role)}

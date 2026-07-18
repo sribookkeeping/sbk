@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand";
 import { findAccount } from "@/lib/actions/auth";
 import { buttonPrimary, Card, ErrorBanner, inputClass } from "@/components/ui";
 
@@ -12,7 +13,7 @@ export default async function FindAccountPage({
   return (
     <main className="mx-auto w-full max-w-sm px-6 py-16">
       <div className="mb-8 text-center">
-        <Link href="/" className="text-4xl">🏡</Link>
+        <Link href="/" className="inline-flex"><BrandMark size={48} /></Link>
         <h1 className="mt-2 text-2xl font-bold">Find my account</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           We&apos;ll email you your member name, family, and sign-in address.

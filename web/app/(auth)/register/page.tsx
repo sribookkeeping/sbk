@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand";
 import { register } from "@/lib/actions/auth";
 import { TimezoneField } from "@/components/timezone-field";
 import { buttonPrimary, Card, ErrorBanner, inputClass } from "@/components/ui";
@@ -13,7 +14,7 @@ export default async function RegisterPage({
   return (
     <main className="mx-auto w-full max-w-sm px-6 py-16">
       <div className="mb-8 text-center">
-        <Link href="/" className="text-4xl">🏡</Link>
+        <Link href="/" className="inline-flex"><BrandMark size={48} /></Link>
         <h1 className="mt-2 text-2xl font-bold">Set up your family</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           You&apos;ll be the head of the family — add your spouse and kids next.

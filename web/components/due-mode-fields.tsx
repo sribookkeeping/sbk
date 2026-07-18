@@ -4,22 +4,19 @@ import { useState } from "react";
 
 type DueMode = "none" | "once" | "schedule";
 
-const OPTIONS: { value: DueMode; emoji: string; title: string; hint: string }[] = [
+const OPTIONS: { value: DueMode; title: string; hint: string }[] = [
   {
     value: "none",
-    emoji: "🕰️",
     title: "No due date",
     hint: "The chore stays open until someone completes it.",
   },
   {
     value: "once",
-    emoji: "📌",
     title: "One due date",
     hint: "Due once, on the date and time you pick.",
   },
   {
     value: "schedule",
-    emoji: "📅",
     title: "On a schedule",
     hint: "Repeats daily, weekly, or monthly. Needs approval from both parents.",
   },
@@ -60,7 +57,7 @@ export function DueModeFields({
             />
             <span>
               <span className="block text-sm font-medium">
-                {option.emoji} {option.title}
+                {option.title}
               </span>
               <span className="block text-xs text-slate-500 dark:text-slate-400">{option.hint}</span>
             </span>

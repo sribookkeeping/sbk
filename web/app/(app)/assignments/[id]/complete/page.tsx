@@ -50,7 +50,7 @@ export default async function CompleteAssignmentPage({
 
         <form action={completeAssignment.bind(null, assignment.id)} className="space-y-5">
           <div className="rounded-xl border border-black/10 p-4 dark:border-white/15">
-            <p className="text-sm font-semibold">Was it harder than usual? 💪</p>
+            <p className="text-sm font-semibold">Was it harder than usual?</p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               The base amount is credited right away. Any extra you request is credited once a
               parent approves it.

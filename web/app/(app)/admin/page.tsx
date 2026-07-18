@@ -52,7 +52,7 @@ export default async function AdminPage({
                 <span className="flex items-center gap-2 text-sm">
                   <Avatar emoji={m.emoji} isParent={m.role === "PARENT"} size={28} />
                   <span className="font-medium">
-                    {m.name} {m.isHead && "👑"} {m.isPlatformAdmin && "🛡️"}
+                    {m.name}{m.isHead && " · head"}{m.isPlatformAdmin && " · admin"}
                   </span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">
                     {roleLabel(m.role)}

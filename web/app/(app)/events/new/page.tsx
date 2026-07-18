@@ -40,7 +40,7 @@ export default async function NewEventPage({
           </div>
 
           <fieldset>
-            <legend className="mb-2 text-sm font-semibold">🤫 Keep it secret from…</legend>
+            <legend className="mb-2 text-sm font-semibold">Keep it secret from…</legend>
             <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
               Excluded members never see this event, its chat, or its chores — perfect for
               surprises.

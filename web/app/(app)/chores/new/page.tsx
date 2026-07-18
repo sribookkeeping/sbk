@@ -48,7 +48,7 @@ export default async function NewChorePage({
           {event && (
             <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm dark:border-indigo-900 dark:bg-indigo-950">
               <input type="hidden" name="eventId" value={event.id} />
-              🎉 This chore is part of <strong>{event.title}</strong>. Excluded members won&apos;t
+              This chore is part of <strong>{event.title}</strong>. Excluded members won&apos;t
               see it, and it can&apos;t repeat on a schedule or join the shared pool.
             </div>
           )}

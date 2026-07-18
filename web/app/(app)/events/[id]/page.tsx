@@ -34,17 +34,17 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
     <div className="mx-auto max-w-2xl">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">🎉 {event.title}</h1>
+          <h1 className="text-2xl font-bold">{event.title}</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {event.eventDate ? `${fmtDate(event.eventDate)} · ` : ""}
             started by {event.createdBy?.name ?? "someone"}
           </p>
         </div>
         {event.revealedAt ? (
-          <Badge color="green">🎊 Revealed — visible to everyone</Badge>
+          <Badge color="green">Revealed — visible to everyone</Badge>
         ) : excluded.length > 0 ? (
           <Badge color="indigo">
-            🤫 Secret from {excluded.map((m) => m.name).join(", ")}
+            Secret from {excluded.map((m) => m.name).join(", ")}
           </Badge>
         ) : null}
       </div>
@@ -57,7 +57,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         (event.createdById === member.id || isParent(member)) && (
           <form action={revealEvent.bind(null, event.id)} className="mt-3">
             <button className="rounded-xl border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">
-              🎊 Reveal the surprise — make everything visible to everyone
+              Reveal the surprise — make everything visible to everyone
             </button>
           </form>
         )}
@@ -97,7 +97,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
       <SectionTitle>Group chat ({event.messages.length})</SectionTitle>
       <Card>
         {event.messages.length === 0 && (
-          <EmptyState>No messages yet — kick off the brainstorm! 💡</EmptyState>
+          <EmptyState>No messages yet — kick off the brainstorm!</EmptyState>
         )}
         <ul className="space-y-3">
           {event.messages.map((message) => {
