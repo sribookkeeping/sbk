@@ -79,7 +79,39 @@ export function SideNav({ items }: { items: NavItem[] }) {
   );
 }
 
-/** Mobile bottom tab bar (hidden on lg+, where the sidebar takes over). */
+/** Horizontal top navigation (desktop) — metrics-band layout. */
+export function TopNav({ items }: { items: NavItem[] }) {
+  const pathname = usePathname();
+  return (
+    <nav className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto lg:flex">
+      {items.map((item) => {
+        const active = isActive(pathname, item);
+        const Icon = ICONS[item.icon] ?? IconGrid;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium ${
+              active
+                ? "bg-white/[0.07] text-white"
+                : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+            }`}
+          >
+            <Icon className={`h-4 w-4 ${active ? "text-indigo-400" : "text-slate-500"}`} />
+            {item.label}
+            {item.badge ? (
+              <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-indigo-600 px-1 text-[10px] font-bold text-white">
+                {item.badge}
+              </span>
+            ) : null}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+/** Mobile bottom tab bar (hidden on lg+, where the top nav takes over). */
 export function TabBar({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   return (

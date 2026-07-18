@@ -1,55 +1,71 @@
 import Link from "next/link";
 import { requireMember, isAdult } from "@/lib/auth";
+import { canDecide, familyRequests, requestHeadline } from "@/lib/approvals";
 import { choreHiddenFrom } from "@/lib/events";
 import { db } from "@/lib/db";
+import { claimAssignment } from "@/lib/actions/chores";
 import { familyBalances, EMPTY_BALANCE } from "@/lib/ledger";
 import { fmtDate, fmtDateTime, fmtMoney, isOverdue } from "@/lib/format";
-import { AssignmentStatus } from "@/lib/types";
-import { Avatar, Card, EmptyState, Money, SectionTitle, Tile } from "@/components/ui";
+import { ApprovalStatus, AssignmentStatus } from "@/lib/types";
+import { Avatar, Card, Money, SectionTitle, Tile } from "@/components/ui";
 import {
   IconArrowDownRight,
   IconArrowUpRight,
+  IconCheckCircle,
   IconListChecks,
+  IconZap,
 } from "@/components/icons";
 
 export default async function DashboardPage() {
   const member = await requireMember();
 
-  const [balances, openAssignments, completedAssignments, expenses] = await Promise.all([
-    familyBalances(member.familyId),
-    db.assignment.findMany({
-      where: { assigneeId: member.id, status: AssignmentStatus.PENDING },
-      include: { chore: true },
-      orderBy: { dueDate: "asc" },
-    }),
-    db.assignment.findMany({
-      where: { chore: { familyId: member.familyId }, status: AssignmentStatus.COMPLETED },
-      include: { chore: { include: { event: true } }, assignee: true },
-      orderBy: { completedAt: "desc" },
-      take: 10,
-    }),
-    db.expense.findMany({
-      where: { familyId: member.familyId },
-      include: { member: true },
-      orderBy: { date: "desc" },
-      take: 10,
-    }),
-  ]);
+  const [balances, myOpen, unclaimed, requests, completedAssignments, expenses] =
+    await Promise.all([
+      familyBalances(member.familyId),
+      db.assignment.findMany({
+        where: { assigneeId: member.id, status: AssignmentStatus.PENDING },
+        include: { chore: true },
+        orderBy: { dueDate: { sort: "asc", nulls: "last" } },
+      }),
+      db.assignment.findMany({
+        where: {
+          assigneeId: null,
+          status: AssignmentStatus.PENDING,
+          chore: { familyId: member.familyId },
+        },
+        include: { chore: { include: { event: true } } },
+        orderBy: { dueDate: { sort: "asc", nulls: "last" } },
+        take: 6,
+      }),
+      familyRequests(member.familyId),
+      db.assignment.findMany({
+        where: { chore: { familyId: member.familyId }, status: AssignmentStatus.COMPLETED },
+        include: { chore: { include: { event: true } }, assignee: true },
+        orderBy: { completedAt: "desc" },
+        take: 6,
+      }),
+      db.expense.findMany({
+        where: { familyId: member.familyId },
+        include: { member: true },
+        orderBy: { date: "desc" },
+        take: 6,
+      }),
+    ]);
 
   const mine = balances.get(member.id) ?? EMPTY_BALANCE;
   const parent = isAdult(member); // adults see family-wide balances & activity
 
-  type Activity = {
-    key: string;
-    date: Date;
-    title: string;
-    subtitle: string;
-    amountCents: number;
-    isEarning: boolean;
-  };
-  const activity: Activity[] = [
+  const claimable = unclaimed.filter((a) => !choreHiddenFrom(a.chore, member.id));
+  const needsMe = requests.filter(
+    (r) => r.status === ApprovalStatus.PENDING && canDecide(r, member),
+  );
+
+  // The single most urgent thing: my next chore, else an approval, else a claim.
+  const nextChore = myOpen[0];
+  const queueChores = myOpen.slice(nextChore ? 1 : 0, 5);
+
+  const activity = [
     ...completedAssignments
-      // hide completions of surprise-event chores from excluded members
       .filter((a) => !choreHiddenFrom(a.chore, member.id))
       .filter((a) => a.assignee && (parent || a.assigneeId === member.id))
       .map((a) => ({
@@ -73,81 +89,189 @@ export default async function DashboardPage() {
       })),
   ]
     .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .slice(0, 8);
+    .slice(0, 4);
+
+  const today = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    timeZone: member.family.timezone,
+  }).format(new Date());
+
+  const kpi = "rounded-2xl border border-black/8 bg-white p-4 dark:border-white/8 dark:bg-slate-900";
+  const kpiLabel =
+    "text-[10px] font-semibold tracking-[0.14em] text-slate-500 uppercase whitespace-nowrap";
 
   return (
     <>
-      {/* Balance hero */}
-      <Card className="!p-6">
-        <p className="text-[11px] font-semibold tracking-[0.16em] text-slate-500 uppercase">
-          My balance
-        </p>
-        <p
-          className={`mt-1.5 text-5xl font-bold tracking-tight tabular-nums ${
-            mine.balanceCents < 0 ? "text-red-600 dark:text-red-400" : ""
-          }`}
-        >
-          {fmtMoney(mine.balanceCents)}
-        </p>
-        <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1.5 text-emerald-600 dark:text-emerald-400">
-            <IconArrowUpRight className="h-3.5 w-3.5" />
-            Earned {fmtMoney(mine.earnedCents)}
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-3 py-1.5 text-red-600 dark:text-red-400">
-            <IconArrowDownRight className="h-3.5 w-3.5" />
-            Spent {fmtMoney(mine.spentCents)}
-          </span>
-          {mine.pendingExtraCents > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1.5 text-amber-600 dark:text-amber-400">
-              {fmtMoney(mine.pendingExtraCents)} extra pending
-            </span>
-          )}
+      {/* KPI strip — one row, scrolls sideways on small screens */}
+      <div className="flex gap-3 overflow-x-auto pb-1 [&>*]:min-w-36 [&>*]:flex-1">
+        <div className={kpi}>
+          <p className={kpiLabel}>My balance</p>
+          <p
+            className={`mt-1 text-2xl font-bold tracking-tight tabular-nums ${
+              mine.balanceCents < 0 ? "text-red-600 dark:text-red-400" : ""
+            }`}
+          >
+            {fmtMoney(mine.balanceCents)}
+          </p>
         </div>
-      </Card>
+        <div className={kpi}>
+          <p className={kpiLabel}>Earned</p>
+          <p className="mt-1 text-2xl font-bold tracking-tight text-emerald-600 tabular-nums dark:text-emerald-400">
+            {fmtMoney(mine.earnedCents)}
+          </p>
+        </div>
+        <div className={kpi}>
+          <p className={kpiLabel}>Spent</p>
+          <p className="mt-1 text-2xl font-bold tracking-tight text-red-600 tabular-nums dark:text-red-400">
+            {fmtMoney(mine.spentCents)}
+          </p>
+        </div>
+        <Link href="/approvals" className={`${kpi} hover:border-indigo-500/40`}>
+          <p className={kpiLabel}>To approve</p>
+          <p
+            className={`mt-1 text-2xl font-bold tracking-tight tabular-nums ${
+              needsMe.length > 0 ? "text-amber-500 dark:text-amber-400" : ""
+            }`}
+          >
+            {needsMe.length}
+          </p>
+        </Link>
+      </div>
 
-      <SectionTitle>My open chores ({openAssignments.length})</SectionTitle>
-      <Card>
-        {openAssignments.length === 0 && (
-          <EmptyState>
-            Nothing on your plate —{" "}
-            <Link href="/chores" className="font-semibold text-indigo-600 dark:text-indigo-400">
-              pick up a chore
-            </Link>{" "}
-            to start earning.
-          </EmptyState>
-        )}
-        <ul className="divide-y divide-black/5 dark:divide-white/5">
-          {openAssignments.slice(0, 5).map((assignment) => (
-            <li key={assignment.id} className="flex items-center gap-3 py-3">
-              <Tile tone="indigo">
-                <IconListChecks className="h-5 w-5" />
-              </Tile>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{assignment.chore.title}</p>
-                {assignment.dueDate && (
-                  <p
-                    className={`text-xs ${
-                      isOverdue(assignment.dueDate, assignment.status)
-                        ? "font-semibold text-red-600 dark:text-red-400"
-                        : "text-slate-500 dark:text-slate-400"
-                    }`}
-                  >
-                    Due {fmtDateTime(assignment.dueDate)}
-                  </p>
-                )}
-              </div>
-              <Money cents={assignment.baseAmountCents} tone="positive" />
-              <Link
-                href={`/assignments/${assignment.id}/complete`}
-                className="rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500"
+      {/* Today feed — one action queue */}
+      <SectionTitle>Today · {today}</SectionTitle>
+
+      {nextChore ? (
+        <Card className="!border-indigo-500/40">
+          <p className="text-[10px] font-semibold tracking-[0.14em] text-indigo-500 uppercase dark:text-indigo-400">
+            Next
+            {nextChore.dueDate &&
+              ` · ${
+                isOverdue(nextChore.dueDate, nextChore.status)
+                  ? "overdue — was due"
+                  : "due"
+              } ${fmtDateTime(nextChore.dueDate)}`}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xl font-bold tracking-tight">{nextChore.chore.title}</p>
+            <Link
+              href={`/assignments/${nextChore.id}/complete`}
+              className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+            >
+              Complete · earn {fmtMoney(nextChore.baseAmountCents)}
+            </Link>
+          </div>
+        </Card>
+      ) : (
+        <Card>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Nothing assigned to you right now
+            {claimable.length > 0 ? " — grab something from the queue below." : "."}
+          </p>
+        </Card>
+      )}
+
+      <div className="mt-3 flex flex-col gap-2">
+        {queueChores.map((assignment) => (
+          <Card key={assignment.id} className="flex items-center gap-3 !py-3">
+            <Tile tone="indigo" size={36}>
+              <IconListChecks className="h-4.5 w-4.5" />
+            </Tile>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{assignment.chore.title}</p>
+              {assignment.dueDate && (
+                <p
+                  className={`text-xs ${
+                    isOverdue(assignment.dueDate, assignment.status)
+                      ? "font-semibold text-red-600 dark:text-red-400"
+                      : "text-slate-500 dark:text-slate-400"
+                  }`}
+                >
+                  Due {fmtDateTime(assignment.dueDate)}
+                </p>
+              )}
+            </div>
+            <Money cents={assignment.baseAmountCents} tone="positive" />
+            <Link
+              href={`/assignments/${assignment.id}/complete`}
+              className="rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500"
+            >
+              Complete
+            </Link>
+          </Card>
+        ))}
+
+        {needsMe.slice(0, 3).map((request) => (
+          <Card key={request.id} className="flex items-center gap-3 !py-3">
+            <Tile tone="amber" size={36}>
+              <IconCheckCircle className="h-4.5 w-4.5" />
+            </Tile>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{requestHeadline(request)}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {request.requestedBy?.name ?? "Someone"} is waiting on you
+              </p>
+            </div>
+            <Link
+              href="/approvals"
+              className="rounded-full border border-amber-500/60 px-3.5 py-1.5 text-xs font-semibold text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/50"
+            >
+              Review
+            </Link>
+          </Card>
+        ))}
+
+        {claimable.slice(0, 3).map((assignment) => (
+          <Card key={assignment.id} className="flex items-center gap-3 !py-3">
+            <Tile tone="emerald" size={36}>
+              <IconZap className="h-4.5 w-4.5" />
+            </Tile>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">
+                Claim &ldquo;{assignment.chore.title}&rdquo;
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {assignment.dueDate
+                  ? `Due ${fmtDateTime(assignment.dueDate)} · first to claim earns it`
+                  : "No due date · first to claim earns it"}
+              </p>
+            </div>
+            <Money cents={assignment.baseAmountCents} tone="positive" />
+            <form action={claimAssignment.bind(null, assignment.id)}>
+              <button
+                type="submit"
+                className="rounded-full bg-amber-500 px-3.5 py-1.5 text-xs font-semibold text-slate-950 hover:bg-amber-400"
               >
-                Complete
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Card>
+                Claim
+              </button>
+            </form>
+          </Card>
+        ))}
+
+        {activity.map((item) => (
+          <Card key={item.key} className="flex items-center gap-3 !py-3 opacity-80">
+            <Tile tone={item.isEarning ? "emerald" : "red"} size={36}>
+              {item.isEarning ? (
+                <IconArrowUpRight className="h-4.5 w-4.5" />
+              ) : (
+                <IconArrowDownRight className="h-4.5 w-4.5" />
+              )}
+            </Tile>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{item.title}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {item.subtitle} · {fmtDate(item.date)}
+              </p>
+            </div>
+            <Money
+              cents={item.isEarning ? item.amountCents : -item.amountCents}
+              tone={item.isEarning ? "positive" : "negative"}
+            />
+          </Card>
+        ))}
+      </div>
 
       {parent && (
         <>
@@ -182,34 +306,6 @@ export default async function DashboardPage() {
           </Card>
         </>
       )}
-
-      <SectionTitle>Recent activity</SectionTitle>
-      <Card>
-        {activity.length === 0 && <EmptyState>No activity yet.</EmptyState>}
-        <ul className="divide-y divide-black/5 dark:divide-white/5">
-          {activity.map((item) => (
-            <li key={item.key} className="flex items-center gap-3 py-3">
-              <Tile tone={item.isEarning ? "emerald" : "red"}>
-                {item.isEarning ? (
-                  <IconArrowUpRight className="h-5 w-5" />
-                ) : (
-                  <IconArrowDownRight className="h-5 w-5" />
-                )}
-              </Tile>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{item.title}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {item.subtitle} · {fmtDate(item.date)}
-                </p>
-              </div>
-              <Money
-                cents={item.isEarning ? item.amountCents : -item.amountCents}
-                tone={item.isEarning ? "positive" : "negative"}
-              />
-            </li>
-          ))}
-        </ul>
-      </Card>
     </>
   );
 }
