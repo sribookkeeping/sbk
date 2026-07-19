@@ -6,6 +6,7 @@ import {
   updateMember,
   deactivateMember,
   reactivateMember,
+  resetMemberPassword,
 } from "@/lib/actions/family";
 import { changePassword } from "@/lib/actions/auth";
 import { buttonSecondary, buttonDanger } from "@/components/ui";
@@ -34,10 +35,11 @@ export default async function FamilyPage({
     updated?: string;
     removed?: string;
     restored?: string;
+    reset?: string;
   }>;
 }) {
   const member = await requireMember();
-  const { error, paid, pwd, tz, updated, removed, restored } = await searchParams;
+  const { error, paid, pwd, tz, updated, removed, restored, reset } = await searchParams;
   const timezones = Intl.supportedValuesOf("timeZone");
   const recentPayouts = await db.payout.findMany({
     where: { familyId: member.familyId },
@@ -74,6 +76,12 @@ export default async function FamilyPage({
         {restored && (
           <p className="rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
             Member restored.
+          </p>
+        )}
+        {reset && (
+          <p className="rounded-xl bg-indigo-50 px-3 py-2 text-sm text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+            Password reset — they&apos;ve been emailed a temporary password and will choose a
+            new one at sign-in.
           </p>
         )}
       </div>
@@ -151,10 +159,19 @@ export default async function FamilyPage({
                           className={inputClass}
                         />
                       </div>
-                      <div className="flex items-center gap-3 sm:col-span-2">
+                      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
                         <button type="submit" className={buttonSecondary}>
                           Save changes
                         </button>
+                        {m.role !== Role.PARENT && !!m.email && !m.deactivatedAt && (
+                          <button
+                            formAction={resetMemberPassword.bind(null, m.id)}
+                            title="Emails them a temporary password; they choose a new one at sign-in"
+                            className={buttonSecondary}
+                          >
+                            Reset password
+                          </button>
+                        )}
                         {m.id !== member.id && (
                           <button
                             formAction={deactivateMember.bind(null, m.id)}
@@ -164,6 +181,12 @@ export default async function FamilyPage({
                           </button>
                         )}
                       </div>
+                      {m.role === Role.PARENT && (
+                        <p className="text-xs text-slate-500 sm:col-span-2 dark:text-slate-400">
+                          Parents reset their own password with &ldquo;Forgot password&rdquo; on
+                          the sign-in page.
+                        </p>
+                      )}
                     </form>
                   </details>
                 )}

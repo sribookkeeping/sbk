@@ -142,6 +142,61 @@ export async function updateMember(memberId: string, formData: FormData) {
 }
 
 /** Parents deactivate a member who left — history is kept; they can't sign in. */
+/**
+ * Parent resets another member's sign-in: a fresh temporary password is
+ * emailed and the next sign-in forces choosing a real one. Parents reset
+ * their own password with "Forgot password" on the sign-in page instead.
+ */
+export async function resetMemberPassword(memberId: string) {
+  const actor = await requireMember();
+  if (!isParent(actor)) fail("Only parents can reset a member's password.");
+
+  const target = await db.member.findUnique({ where: { id: memberId } });
+  if (!target || target.familyId !== actor.familyId) fail("Member not found.");
+  if (target.role === Role.PARENT) {
+    fail('Parents reset their own password with "Forgot password" on the sign-in page.');
+  }
+  if (target.deactivatedAt) fail("That member is no longer active.");
+  if (!target.email) {
+    fail("Add an email to this member first — the new password is sent there.");
+  }
+
+  const tempPassword = generateTempPassword();
+  const previous = {
+    passwordHash: target.passwordHash,
+    mustChangePassword: target.mustChangePassword,
+  };
+  await db.member.update({
+    where: { id: target.id },
+    data: {
+      passwordHash: await hashPassword(tempPassword),
+      mustChangePassword: true,
+      tokenVersion: { increment: 1 }, // sign the member out everywhere
+    },
+  });
+
+  try {
+    const url = process.env.APP_URL || "http://localhost:3000";
+    await sendEmail({
+      to: target.email,
+      subject: "Your SriBookKeeping password was reset",
+      html: `<p>Hi ${target.name},</p>
+<p>${actor.name} reset your password.</p>
+<p>Sign in at <a href="${url}/login">${url}/login</a> with:</p>
+<p>Email: <strong>${target.email}</strong><br>
+Temporary password: <strong>${tempPassword}</strong></p>
+<p>You'll be asked to choose your own password when you sign in.</p>`,
+    });
+  } catch {
+    await db.member.update({ where: { id: target.id }, data: previous });
+    fail("We couldn't send the email — the password wasn't changed. Try again.");
+  }
+
+  await audit(actor, AuditAction.PASSWORD_RESET, "Member", target.id, { byParent: true });
+  revalidatePath("/family");
+  redirect("/family?reset=1");
+}
+
 export async function deactivateMember(memberId: string) {
   const actor = await requireMember();
   if (!isParent(actor)) fail("Only parents can remove family members.");
