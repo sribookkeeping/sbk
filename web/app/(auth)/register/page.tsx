@@ -29,9 +29,31 @@ export default async function RegisterPage({
             <label className="mb-1 block text-sm font-medium" htmlFor="familyName">Family name</label>
             <input id="familyName" name="familyName" required placeholder="The Yerras" className={inputClass} />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium" htmlFor="name">Your name</label>
-            <input id="name" name="name" required className={inputClass} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-sm font-medium" htmlFor="firstName">
+                First name
+              </label>
+              <input
+                id="firstName"
+                name="firstName"
+                required
+                autoComplete="given-name"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium" htmlFor="lastName">
+                Last name
+              </label>
+              <input
+                id="lastName"
+                name="lastName"
+                required
+                autoComplete="family-name"
+                className={inputClass}
+              />
+            </div>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium" htmlFor="email">Email</label>

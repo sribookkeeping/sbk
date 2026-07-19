@@ -43,10 +43,13 @@ function fail(path: string, message: string): never {
  */
 export async function register(formData: FormData) {
   const familyName = String(formData.get("familyName") ?? "").trim();
-  const name = String(formData.get("name") ?? "").trim();
+  const firstName = String(formData.get("firstName") ?? "").trim();
+  const lastName = String(formData.get("lastName") ?? "").trim();
+  const name = `${firstName} ${lastName}`.trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
 
-  if (!familyName || !name) fail("/register", "Family name and your name are required.");
+  if (!familyName) fail("/register", "Family name is required.");
+  if (!firstName || !lastName) fail("/register", "First and last name are required.");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("/register", "Enter a valid email address.");
 
   const existing = await db.member.findUnique({ where: { email } });
