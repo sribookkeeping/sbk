@@ -25,14 +25,12 @@ export async function addMember(formData: FormData) {
 
   if (!name) fail("The member needs a name.");
   if (!Object.values(Role).includes(role as Role)) fail("Pick a role.");
-  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("Enter a valid email address.");
-  if (email && password.length < 8) fail("Password must be at least 8 characters for a sign-in.");
-  if (!email && password) fail("Add an email to give this member a sign-in.");
+  if (!email) fail("Every member needs an email address.");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("Enter a valid email address.");
+  if (password && password.length < 8) fail("Password must be at least 8 characters for a sign-in.");
 
-  if (email) {
-    const existing = await db.member.findUnique({ where: { email } });
-    if (existing) fail("That email is already in use.");
-  }
+  const existing = await db.member.findUnique({ where: { email } });
+  if (existing) fail("That email is already in use.");
 
   const created = await db.member.create({
     data: {
@@ -40,8 +38,8 @@ export async function addMember(formData: FormData) {
       name,
       role,
       emoji: emoji.slice(0, 4),
-      email: email || null,
-      passwordHash: email ? await hashPassword(password) : null,
+      email,
+      passwordHash: password ? await hashPassword(password) : null,
     },
   });
 

@@ -94,7 +94,8 @@ export default async function FamilyPage({
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {roleLabel(m.role)}
-                        {m.email ? ` · ${m.email}` : " · no sign-in yet"}
+                        {m.email && ` · ${m.email}`}
+                        {!m.passwordHash && " · no sign-in yet"}
                       </p>
                     </div>
                   </div>
@@ -347,13 +348,13 @@ export default async function FamilyPage({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium" htmlFor="email">
-                    Email (optional — lets them sign in)
+                    Email (required)
                   </label>
-                  <input id="email" name="email" type="email" className={inputClass} />
+                  <input id="email" name="email" type="email" required className={inputClass} />
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium" htmlFor="password">
-                    Password (8+ chars, required with email)
+                    Password (optional — 8+ chars gives them a sign-in)
                   </label>
                   <input id="password" name="password" type="password" autoComplete="new-password" className={inputClass} />
                 </div>
