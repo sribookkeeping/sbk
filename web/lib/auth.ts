@@ -33,6 +33,16 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
+/**
+ * Random temporary password for emailed invites (no ambiguous 0/O/1/l/I).
+ * The account is created with mustChangePassword, so this only ever grants
+ * one sign-in that leads straight to the change-password screen.
+ */
+export function generateTempPassword(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  return Array.from({ length: 12 }, () => alphabet[crypto.randomInt(alphabet.length)]).join("");
+}
+
 // MARK: durable brute-force lockout
 // Persisted per-member, so it survives restarts and works across multiple
 // server instances (unlike the in-memory IP limiter, which is a first layer).

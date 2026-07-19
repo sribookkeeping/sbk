@@ -345,19 +345,15 @@ export default async function FamilyPage({
                 <label className="mb-1 block text-sm font-medium" htmlFor="emoji">Emoji avatar</label>
                 <input id="emoji" name="emoji" placeholder="🧒" maxLength={4} className={inputClass} />
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium" htmlFor="email">
-                    Email (required)
-                  </label>
-                  <input id="email" name="email" type="email" required className={inputClass} />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium" htmlFor="password">
-                    Password (optional — 8+ chars gives them a sign-in)
-                  </label>
-                  <input id="password" name="password" type="password" autoComplete="new-password" className={inputClass} />
-                </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium" htmlFor="email">
+                  Email (required)
+                </label>
+                <input id="email" name="email" type="email" required className={inputClass} />
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  They&apos;ll get a temporary password by email and choose their own at first
+                  sign-in.
+                </p>
               </div>
               <button type="submit" className={buttonPrimary}>Add Member</button>
             </form>

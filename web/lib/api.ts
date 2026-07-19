@@ -39,6 +39,7 @@ export function serializeMember(m: {
   email: string | null;
   isPlatformAdmin?: boolean;
   reportFrequency?: string;
+  mustChangePassword?: boolean;
   deactivatedAt?: Date | null;
 }) {
   return {
@@ -50,6 +51,7 @@ export function serializeMember(m: {
     email: m.email,
     isPlatformAdmin: m.isPlatformAdmin ?? false,
     reportFrequency: m.reportFrequency ?? "MONTHLY",
+    mustChangePassword: m.mustChangePassword ?? false,
     active: !m.deactivatedAt,
   };
 }

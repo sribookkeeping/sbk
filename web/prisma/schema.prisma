@@ -45,6 +45,9 @@ model Member {
   emoji        String   @default("🙂")
   email        String?  @unique
   passwordHash String?
+  // Set when the account was created with an emailed temporary password —
+  // the web app forces a password change at first sign-in.
+  mustChangePassword Boolean @default(false)
   // Balance-sheet report emails (requires email to be set).
   reportFrequency  String    @default("MONTHLY") // NONE | DAILY | WEEKLY | MONTHLY | QUARTERLY | HALF_YEARLY | YEARLY
   lastReportSentAt DateTime?

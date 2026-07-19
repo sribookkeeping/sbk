@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireMember, isParent, isPlatformAdmin } from "@/lib/auth";
 import { stopImpersonating } from "@/lib/actions/admin";
 import { canDecide } from "@/lib/approvals";
@@ -15,6 +16,8 @@ import { TopNav, TabBar, type NavItem } from "@/components/nav-links";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const member = await requireMember();
+  // Temporary-password accounts must pick a real password before anything else.
+  if (member.mustChangePassword) redirect("/change-password");
 
   // Materialize schedule occurrences + claim reminders + auto-assignment,
   // then any balance-sheet report emails that are due. Both idempotent; in

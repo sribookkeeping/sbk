@@ -36,10 +36,10 @@ export default async function RegisterPage({
           <div>
             <label className="mb-1 block text-sm font-medium" htmlFor="email">Email</label>
             <input id="email" name="email" type="email" required autoComplete="email" className={inputClass} />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium" htmlFor="password">Password (8+ characters)</label>
-            <input id="password" name="password" type="password" required minLength={8} autoComplete="new-password" className={inputClass} />
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              We&apos;ll email you a temporary password — you&apos;ll choose your own when you
+              first sign in.
+            </p>
           </div>
           <button type="submit" className={`${buttonPrimary} w-full`}>Create Family</button>
         </form>

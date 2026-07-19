@@ -8,6 +8,7 @@ import {
   createResetToken,
   consumeResetToken,
   destroySession,
+  generateTempPassword,
   hashPassword,
   requireMember,
   verifyPassword,
@@ -36,29 +37,31 @@ function fail(path: string, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
 }
 
-/** Head of family registers the household (requirement 1). */
+/**
+ * Head of family registers the household (requirement 1). A temporary
+ * password is emailed; the first sign-in forces choosing a real one.
+ */
 export async function register(formData: FormData) {
   const familyName = String(formData.get("familyName") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
 
   if (!familyName || !name) fail("/register", "Family name and your name are required.");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("/register", "Enter a valid email address.");
-  if (password.length < 8) fail("/register", "Password must be at least 8 characters.");
 
   const existing = await db.member.findUnique({ where: { email } });
   if (existing) fail("/register", "That email is already registered — try signing in.");
 
   // Browser-captured IANA timezone → schedule math runs in the family's day.
   const timezone = String(formData.get("timezone") ?? "").trim();
+  const tempPassword = generateTempPassword();
   const family = await db.family.create({
     data: {
       name: familyName,
       ...(timezone && isValidTimeZone(timezone) ? { timezone } : {}),
     },
   });
-  const head = await db.member.create({
+  await db.member.create({
     data: {
       familyId: family.id,
       name,
@@ -66,12 +69,33 @@ export async function register(formData: FormData) {
       isHead: true,
       emoji: "🧑‍💼",
       email,
-      passwordHash: await hashPassword(password),
+      passwordHash: await hashPassword(tempPassword),
+      mustChangePassword: true,
     },
   });
 
-  await createSession(head.id);
-  redirect("/dashboard");
+  try {
+    await sendEmail({
+      to: email,
+      subject: "Welcome to SriBookKeeping — your temporary password",
+      html: `<p>Hi ${name},</p>
+<p>Your family <strong>${familyName}</strong> is ready.</p>
+<p>Sign in at <a href="${appUrl()}/login">${appUrl()}/login</a> with:</p>
+<p>Email: <strong>${email}</strong><br>
+Temporary password: <strong>${tempPassword}</strong></p>
+<p>You'll be asked to choose your own password the first time you sign in.</p>`,
+    });
+  } catch {
+    // No email means no way in — undo so they can try again.
+    await db.family.delete({ where: { id: family.id } });
+    fail("/register", "We couldn't send the sign-in email — nothing was created. Try again.");
+  }
+
+  redirect(
+    `/login?notice=${encodeURIComponent(
+      "Check your email for your temporary password, then sign in.",
+    )}`,
+  );
 }
 
 export async function login(formData: FormData) {
@@ -96,6 +120,33 @@ export async function login(formData: FormData) {
   await clearFailedLogins(member.id);
   await createSession(member.id);
   await audit(member, AuditAction.MEMBER_SIGNED_IN, "Member", member.id, {});
+  // Accounts created with an emailed temporary password pick a real one first.
+  redirect(member.mustChangePassword ? "/change-password" : "/dashboard");
+}
+
+/**
+ * First sign-in with an emailed temporary password: the member must choose
+ * their own. No "current password" needed — they just authenticated with it.
+ */
+export async function setFirstPassword(formData: FormData) {
+  const member = await requireMember();
+  if (!member.mustChangePassword) redirect("/dashboard");
+
+  const next = String(formData.get("next") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+  if (next.length < 8) fail("/change-password", "Password must be at least 8 characters.");
+  if (next !== confirm) fail("/change-password", "Passwords don't match.");
+
+  await db.member.update({
+    where: { id: member.id },
+    data: {
+      passwordHash: await hashPassword(next),
+      mustChangePassword: false,
+      tokenVersion: { increment: 1 }, // invalidate any other temp-password session
+    },
+  });
+  await audit(member, AuditAction.PASSWORD_CHANGED, "Member", member.id, { firstLogin: true });
+  await createSession(member.id); // keep THIS session alive on the new version
   redirect("/dashboard");
 }
 

@@ -7,9 +7,9 @@ import { InstallButton } from "@/components/install-button";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; notice?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, notice } = await searchParams;
 
   return (
     <main className="mx-auto w-full max-w-sm px-6 py-16">
@@ -20,6 +20,11 @@ export default async function LoginPage({
 
       <Card>
         <ErrorBanner message={error} />
+        {notice && (
+          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+            {notice}
+          </div>
+        )}
         <form action={login} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium" htmlFor="email">Email</label>

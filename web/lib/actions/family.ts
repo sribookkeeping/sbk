@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireMember, isParent, hashPassword } from "@/lib/auth";
+import { requireMember, isParent, hashPassword, generateTempPassword } from "@/lib/auth";
 import { audit, AuditAction } from "@/lib/audit";
+import { sendEmail } from "@/lib/email";
 import { isValidTimeZone } from "@/lib/format";
 import { Role } from "@/lib/types";
 
@@ -21,17 +22,18 @@ export async function addMember(formData: FormData) {
   const role = String(formData.get("role") ?? Role.CHILD);
   const emoji = String(formData.get("emoji") ?? "").trim() || DEFAULT_EMOJI[role] || "🙂";
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
 
   if (!name) fail("The member needs a name.");
   if (!Object.values(Role).includes(role as Role)) fail("Pick a role.");
   if (!email) fail("Every member needs an email address.");
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("Enter a valid email address.");
-  if (password && password.length < 8) fail("Password must be at least 8 characters for a sign-in.");
 
   const existing = await db.member.findUnique({ where: { email } });
   if (existing) fail("That email is already in use.");
 
+  // Every member gets an emailed temporary password; first sign-in forces
+  // choosing a real one.
+  const tempPassword = generateTempPassword();
   const created = await db.member.create({
     data: {
       familyId: member.familyId,
@@ -39,9 +41,27 @@ export async function addMember(formData: FormData) {
       role,
       emoji: emoji.slice(0, 4),
       email,
-      passwordHash: password ? await hashPassword(password) : null,
+      passwordHash: await hashPassword(tempPassword),
+      mustChangePassword: true,
     },
   });
+
+  try {
+    const url = process.env.APP_URL || "http://localhost:3000";
+    await sendEmail({
+      to: email,
+      subject: `You've been added to ${member.family.name} on SriBookKeeping`,
+      html: `<p>Hi ${name},</p>
+<p>${member.name} added you to <strong>${member.family.name}</strong>.</p>
+<p>Sign in at <a href="${url}/login">${url}/login</a> with:</p>
+<p>Email: <strong>${email}</strong><br>
+Temporary password: <strong>${tempPassword}</strong></p>
+<p>You'll be asked to choose your own password the first time you sign in.</p>`,
+    });
+  } catch {
+    await db.member.delete({ where: { id: created.id } });
+    fail("We couldn't send the invite email — the member wasn't added. Try again.");
+  }
 
   await audit(member, AuditAction.MEMBER_ADDED, "Member", created.id, { name, role });
   revalidatePath("/family");
