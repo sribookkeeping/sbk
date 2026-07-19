@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { requireMember, isParent } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { completeAssignment } from "@/lib/actions/chores";
-import { AssignmentStatus } from "@/lib/types";
+import { AssignmentStatus, RateType, rateSuffix, rateUnitNoun } from "@/lib/types";
 import { buttonPrimary, Card, ErrorBanner, inputClass, Money } from "@/components/ui";
 
 export default async function CompleteAssignmentPage({
@@ -45,10 +45,38 @@ export default async function CompleteAssignmentPage({
               Assigned to {assignment.assignee.name}
             </p>
           </div>
-          <Money cents={assignment.baseAmountCents} tone="positive" className="text-lg" />
+          <p>
+            <Money cents={assignment.baseAmountCents} tone="positive" className="text-lg" />
+            {assignment.chore.rateType !== RateType.FLAT && (
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                {rateSuffix(assignment.chore.rateType)}
+              </span>
+            )}
+          </p>
         </div>
 
         <form action={completeAssignment.bind(null, assignment.id)} className="space-y-5">
+          {assignment.chore.rateType !== RateType.FLAT && (
+            <div>
+              <label className="mb-1 block text-sm font-medium" htmlFor="units">
+                How many {rateUnitNoun(assignment.chore.rateType)} did it take?
+              </label>
+              <input
+                id="units"
+                name="units"
+                type="number"
+                required
+                min="0.25"
+                max="999"
+                step="0.25"
+                placeholder="2"
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                You earn the rate × {rateUnitNoun(assignment.chore.rateType)} logged.
+              </p>
+            </div>
+          )}
           <div className="rounded-xl border border-black/10 p-4 dark:border-white/15">
             <p className="text-sm font-semibold">Was it harder than usual?</p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -79,7 +107,7 @@ export default async function CompleteAssignmentPage({
 
           <div>
             <label className="mb-1 block text-sm font-medium" htmlFor="proof">
-              📸 Photo proof of the finished work (required)
+              Photo proof of the finished work (required)
             </label>
             <input
               id="proof"

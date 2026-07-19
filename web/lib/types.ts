@@ -61,6 +61,43 @@ export function reportFrequencyDays(frequency: string): number {
 export const ChoreKind = { POOL: "POOL", ONE_TIME: "ONE_TIME" } as const;
 export type ChoreKind = (typeof ChoreKind)[keyof typeof ChoreKind];
 
+// How a chore pays: one flat amount, or a rate × hours/days/weeks logged at
+// completion. Mutually exclusive, chosen when the chore is created.
+export const RateType = {
+  FLAT: "FLAT",
+  HOURLY: "HOURLY",
+  DAILY: "DAILY",
+  WEEKLY: "WEEKLY",
+} as const;
+export type RateType = (typeof RateType)[keyof typeof RateType];
+
+export const RATE_OPTIONS: { value: RateType; label: string; hint: string }[] = [
+  { value: RateType.FLAT, label: "Flat fee", hint: "One amount for the whole chore." },
+  { value: RateType.HOURLY, label: "Per hour", hint: "Log hours when completing; earn rate × hours." },
+  { value: RateType.DAILY, label: "Per day", hint: "Log days when completing; earn rate × days." },
+  { value: RateType.WEEKLY, label: "Per week", hint: "Log weeks when completing; earn rate × weeks." },
+];
+
+/** "/hr", "/day", "/wk" — empty for flat chores. */
+export function rateSuffix(rateType?: string | null): string {
+  switch (rateType) {
+    case RateType.HOURLY: return "/hr";
+    case RateType.DAILY: return "/day";
+    case RateType.WEEKLY: return "/wk";
+    default: return "";
+  }
+}
+
+/** "hours" | "days" | "weeks" — what the completer logs for a rate chore. */
+export function rateUnitNoun(rateType?: string | null): string {
+  switch (rateType) {
+    case RateType.HOURLY: return "hours";
+    case RateType.DAILY: return "days";
+    case RateType.WEEKLY: return "weeks";
+    default: return "";
+  }
+}
+
 export const PoolStatus = {
   PENDING_APPROVAL: "PENDING_APPROVAL",
   ACTIVE: "ACTIVE",

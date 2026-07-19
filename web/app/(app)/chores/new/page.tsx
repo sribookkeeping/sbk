@@ -10,6 +10,7 @@ import {
   defaultDueValue,
 } from "@/components/assignment-form-fields";
 import { DueModeFields } from "@/components/due-mode-fields";
+import { RateModeFields } from "@/components/rate-mode-fields";
 import { AssignModeFields } from "@/components/assign-mode-fields";
 
 export default async function NewChorePage({
@@ -60,17 +61,7 @@ export default async function NewChorePage({
             <label className="mb-1 block text-sm font-medium" htmlFor="details">Details (optional)</label>
             <textarea id="details" name="details" rows={2} className={inputClass} />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium" htmlFor="amount">Amount ($)</label>
-            <input
-              id="amount"
-              name="amount"
-              required
-              inputMode="decimal"
-              placeholder="5.00"
-              className={inputClass}
-            />
-          </div>
+          <RateModeFields />
 
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-black/10 px-3 py-3 dark:border-white/15">
             <input type="checkbox" name="addToPool" className="mt-0.5 size-4 accent-indigo-600" />

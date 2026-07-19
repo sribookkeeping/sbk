@@ -4,7 +4,7 @@ import { choreHiddenFrom } from "@/lib/events";
 import { db } from "@/lib/db";
 import { claimAssignment, giveUpAssignment, retireChore } from "@/lib/actions/chores";
 import { fmtDateTime, isOverdue } from "@/lib/format";
-import { AssignmentStatus, ChoreKind, PoolStatus } from "@/lib/types";
+import { AssignmentStatus, ChoreKind, PoolStatus, rateSuffix } from "@/lib/types";
 import {
   Avatar,
   Badge,
@@ -99,7 +99,7 @@ export default async function ChoresPage({
                         : "No due date · unclaimed"}
                     </p>
                   </div>
-                  <Money cents={assignment.baseAmountCents} tone="positive" />
+                  <span className="whitespace-nowrap"><Money cents={assignment.baseAmountCents} tone="positive" /><span className="text-xs text-slate-500 dark:text-slate-400">{rateSuffix(assignment.chore.rateType)}</span></span>
                   <form action={claimAssignment.bind(null, assignment.id)}>
                     <button
                       type="submit"
@@ -148,7 +148,7 @@ export default async function ChoresPage({
                   </p>
                 )}
               </div>
-              <Money cents={assignment.baseAmountCents} tone="positive" />
+              <span className="whitespace-nowrap"><Money cents={assignment.baseAmountCents} tone="positive" /><span className="text-xs text-slate-500 dark:text-slate-400">{rateSuffix(assignment.chore.rateType)}</span></span>
               <Link
                 href={`/assignments/${assignment.id}/complete`}
                 className="rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500"
@@ -205,7 +205,7 @@ export default async function ChoresPage({
                   </p>
                 )}
               </div>
-              <Money cents={chore.amountCents} tone="positive" />
+              <span className="whitespace-nowrap"><Money cents={chore.amountCents} tone="positive" /><span className="text-xs text-slate-500 dark:text-slate-400">{rateSuffix(chore.rateType)}</span></span>
               <Link
                 href={`/chores/${chore.id}/pickup`}
                 className="rounded-full border border-indigo-500/50 px-3.5 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/50"
@@ -253,7 +253,7 @@ export default async function ChoresPage({
                       Proposed by {chore.createdBy?.name ?? "someone"}
                     </p>
                   </div>
-                  <Money cents={chore.amountCents} tone="plain" />
+                  <span className="whitespace-nowrap"><Money cents={chore.amountCents} tone="plain" /><span className="text-xs text-slate-500 dark:text-slate-400">{rateSuffix(chore.rateType)}</span></span>
                   <Badge color="orange">Pending</Badge>
                 </li>
               ))}
@@ -296,7 +296,7 @@ export default async function ChoresPage({
                       {assignment.dueDate && ` · due ${fmtDateTime(assignment.dueDate)}`}
                     </p>
                   </div>
-                  <Money cents={assignment.baseAmountCents} tone="plain" />
+                  <span className="whitespace-nowrap"><Money cents={assignment.baseAmountCents} tone="plain" /><span className="text-xs text-slate-500 dark:text-slate-400">{rateSuffix(assignment.chore.rateType)}</span></span>
                   {assignment.autoAssigned && (
                     <form action={claimAssignment.bind(null, assignment.id)}>
                       <button

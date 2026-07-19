@@ -87,6 +87,9 @@ model Chore {
   family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
   title       String
   details     String   @default("")
+  // FLAT: amountCents is the whole payment. HOURLY/DAILY/WEEKLY: amountCents
+  // is the rate; the completer logs units and earns rate × units.
+  rateType    String   @default("FLAT") // FLAT | HOURLY | DAILY | WEEKLY
   amountCents Int
   kind        String   // POOL | ONE_TIME
   poolStatus  String   @default("ACTIVE") // PENDING_APPROVAL | ACTIVE | REJECTED | RETIRED
@@ -121,7 +124,9 @@ model Assignment {
   reminderHour     Int       @default(-1) // 0–23, or -1 for no reminder
   status           String    @default("PENDING") // PENDING | COMPLETED | CANCELLED
   completedAt      DateTime?
-  baseAmountCents  Int       // snapshot of chore amount at assignment time
+  baseAmountCents  Int       // snapshot of chore amount at assignment time;
+                             // for rate chores it becomes rate × units at completion
+  rateUnits        Float?    // hours/days/weeks logged when completing a rate chore
   extraAmountCents Int       @default(0)
   extraReason      String    @default("")
   extraStatus      String    @default("NONE") // NONE | PENDING | APPROVED | DENIED

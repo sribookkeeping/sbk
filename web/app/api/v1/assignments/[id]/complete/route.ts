@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { audit, AuditAction } from "@/lib/audit";
 import { submitExtraPay } from "@/lib/approvals";
 import { saveReceipt } from "@/lib/storage";
-import { AssignmentStatus } from "@/lib/types";
+import { AssignmentStatus, RateType, rateUnitNoun } from "@/lib/types";
 import { apiError, json, serializeAssignment, withAuth } from "@/lib/api";
 
 /**
@@ -54,6 +54,22 @@ export const POST = withAuth<{ params: Promise<{ id: string }> }>(
       return apiError("extraReason is required when requesting extra pay", 400);
     }
 
+    // Rate chores (per hour/day/week): `units` is required; pay = rate × units.
+    let rateFields: { baseAmountCents: number; rateUnits: number } | undefined;
+    if (assignment.chore.rateType !== RateType.FLAT) {
+      const units = Number(form.get("units"));
+      if (!Number.isFinite(units) || units <= 0 || units > 999) {
+        return apiError(
+          `units (${rateUnitNoun(assignment.chore.rateType)} worked) is required for this chore`,
+          400,
+        );
+      }
+      rateFields = {
+        baseAmountCents: Math.round(assignment.baseAmountCents * units),
+        rateUnits: units,
+      };
+    }
+
     await db.assignment.update({
       where: { id },
       data: {
@@ -62,6 +78,7 @@ export const POST = withAuth<{ params: Promise<{ id: string }> }>(
         extraAmountCents: extraCents,
         extraReason: extraCents > 0 ? extraReason : "",
         proofImage,
+        ...rateFields,
       },
     });
 

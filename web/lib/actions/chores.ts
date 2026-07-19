@@ -21,6 +21,8 @@ import {
   ChoreKind,
   NotificationType,
   PoolStatus,
+  RateType,
+  rateUnitNoun,
   Recurrence,
 } from "@/lib/types";
 
@@ -49,6 +51,7 @@ export async function createChore(formData: FormData) {
 
   const title = String(formData.get("title") ?? "").trim();
   const details = String(formData.get("details") ?? "").trim();
+  const rateType = String(formData.get("rateType") ?? RateType.FLAT);
   const amountCents = parseMoney(String(formData.get("amount") ?? ""));
   const addToPool = formData.get("addToPool") === "on";
   const assigneeIds = formData.getAll("assignees").map(String);
@@ -63,6 +66,9 @@ export async function createChore(formData: FormData) {
   if (eventId && !event) fail("/chores/new", "Event not found.");
 
   if (!title) fail("/chores/new", "Give the chore a title.");
+  if (!Object.values(RateType).includes(rateType as RateType)) {
+    fail("/chores/new", "Pick how the chore pays.");
+  }
   if (amountCents === null || amountCents <= 0) fail("/chores/new", "Enter a valid dollar amount.");
   if (event && isSchedule) {
     fail("/chores/new", "Event chores can't repeat on a schedule — give them a due date instead.");
@@ -102,6 +108,7 @@ export async function createChore(formData: FormData) {
       familyId: member.familyId,
       title,
       details,
+      rateType,
       amountCents,
       // A scheduled chore lives in the pool so occurrences reference it.
       // Event chores never join the pool (they'd leak the surprise).
@@ -371,6 +378,21 @@ export async function completeAssignment(assignmentId: string, formData: FormDat
     fail("/chores", "This chore is already completed.");
   }
 
+  // Rate chores (per hour/day/week): the completer logs units; pay is
+  // rate × units, snapshotted into baseAmountCents.
+  let rateFields: { baseAmountCents: number; rateUnits: number } | undefined;
+  if (assignment.chore.rateType !== RateType.FLAT) {
+    const units = Number(String(formData.get("units") ?? "").trim());
+    const noun = rateUnitNoun(assignment.chore.rateType);
+    if (!Number.isFinite(units) || units <= 0 || units > 999) {
+      fail(backPath, `Enter how many ${noun} it took.`);
+    }
+    rateFields = {
+      baseAmountCents: Math.round(assignment.baseAmountCents * units),
+      rateUnits: units,
+    };
+  }
+
   const extraRaw = String(formData.get("extraAmount") ?? "").trim();
   const extraReason = String(formData.get("extraReason") ?? "").trim();
   let extraCents = 0;
@@ -400,6 +422,7 @@ export async function completeAssignment(assignmentId: string, formData: FormDat
     extraAmountCents: extraCents,
     extraReason: extraCents > 0 ? extraReason : "",
     proofImage,
+    ...rateFields,
   });
   if (!won) fail("/chores", "This chore was already completed.");
 

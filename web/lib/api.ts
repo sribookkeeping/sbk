@@ -65,11 +65,13 @@ export function serializeChore(c: {
   poolStatus: string;
   createdById: string | null;
   createdAt: Date;
+  rateType?: string;
 }) {
   return {
     id: c.id,
     title: c.title,
     details: c.details,
+    rateType: c.rateType ?? "FLAT",
     amountCents: c.amountCents,
     kind: c.kind,
     poolStatus: c.poolStatus,
@@ -93,6 +95,7 @@ export function serializeAssignment(a: {
   extraReason: string;
   extraStatus: string;
   autoAssigned?: boolean;
+  rateUnits?: number | null;
 }) {
   return {
     id: a.id,
@@ -109,5 +112,6 @@ export function serializeAssignment(a: {
     extraReason: a.extraReason,
     extraStatus: a.extraStatus,
     autoAssigned: a.autoAssigned ?? false,
+    rateUnits: a.rateUnits ?? null,
   };
 }

@@ -54,6 +54,9 @@ export async function tryComplete(
     extraAmountCents: number;
     extraReason: string;
     proofImage: string;
+    // Rate chores: final pay (rate × units) and the units that were logged.
+    baseAmountCents?: number;
+    rateUnits?: number;
   },
 ): Promise<boolean> {
   const result = await db.assignment.updateMany({

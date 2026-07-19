@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { claimAssignment } from "@/lib/actions/chores";
 import { familyBalances, EMPTY_BALANCE } from "@/lib/ledger";
 import { fmtDate, fmtDateTime, fmtMoney, isOverdue } from "@/lib/format";
-import { ApprovalStatus, AssignmentStatus } from "@/lib/types";
+import { ApprovalStatus, AssignmentStatus, RateType, rateSuffix } from "@/lib/types";
 import { Avatar, Card, Money, SectionTitle, Tile } from "@/components/ui";
 import {
   IconArrowDownRight,
@@ -160,7 +160,9 @@ export default async function DashboardPage() {
               href={`/assignments/${nextChore.id}/complete`}
               className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
             >
-              Complete · earn {fmtMoney(nextChore.baseAmountCents)}
+              {nextChore.chore.rateType === RateType.FLAT
+                ? `Complete · earn ${fmtMoney(nextChore.baseAmountCents)}`
+                : `Complete · ${fmtMoney(nextChore.baseAmountCents)}${rateSuffix(nextChore.chore.rateType)}`}
             </Link>
           </div>
         </Card>
@@ -193,7 +195,7 @@ export default async function DashboardPage() {
                 </p>
               )}
             </div>
-            <Money cents={assignment.baseAmountCents} tone="positive" />
+            <span className="whitespace-nowrap"><Money cents={assignment.baseAmountCents} tone="positive" /><span className="text-xs text-slate-500 dark:text-slate-400">{rateSuffix(assignment.chore.rateType)}</span></span>
             <Link
               href={`/assignments/${assignment.id}/complete`}
               className="rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500"
@@ -238,7 +240,7 @@ export default async function DashboardPage() {
                   : "No due date · first to claim earns it"}
               </p>
             </div>
-            <Money cents={assignment.baseAmountCents} tone="positive" />
+            <span className="whitespace-nowrap"><Money cents={assignment.baseAmountCents} tone="positive" /><span className="text-xs text-slate-500 dark:text-slate-400">{rateSuffix(assignment.chore.rateType)}</span></span>
             <form action={claimAssignment.bind(null, assignment.id)}>
               <button
                 type="submit"
