@@ -163,15 +163,18 @@ export default async function FamilyPage({
                         <button type="submit" className={buttonSecondary}>
                           Save changes
                         </button>
-                        {m.role !== Role.PARENT && !!m.email && !m.deactivatedAt && (
-                          <button
-                            formAction={resetMemberPassword.bind(null, m.id)}
-                            title="Emails them a temporary password; they choose a new one at sign-in"
-                            className={buttonSecondary}
-                          >
-                            Reset password
-                          </button>
-                        )}
+                        {m.id !== member.id &&
+                          !!m.email &&
+                          !m.deactivatedAt &&
+                          (m.role !== Role.PARENT || member.isHead) && (
+                            <button
+                              formAction={resetMemberPassword.bind(null, m.id)}
+                              title="Emails them a temporary password; they choose a new one at sign-in"
+                              className={buttonSecondary}
+                            >
+                              Reset password
+                            </button>
+                          )}
                         {m.id !== member.id && (
                           <button
                             formAction={deactivateMember.bind(null, m.id)}
@@ -181,10 +184,11 @@ export default async function FamilyPage({
                           </button>
                         )}
                       </div>
-                      {m.role === Role.PARENT && (
+                      {m.role === Role.PARENT && (m.id === member.id || !member.isHead) && (
                         <p className="text-xs text-slate-500 sm:col-span-2 dark:text-slate-400">
-                          Parents reset their own password with &ldquo;Forgot password&rdquo; on
-                          the sign-in page.
+                          {m.id === member.id
+                            ? "Reset your own password with “Forgot password” on the sign-in page."
+                            : "Only the family head can reset a parent's password."}
                         </p>
                       )}
                     </form>

@@ -144,8 +144,9 @@ export async function updateMember(memberId: string, formData: FormData) {
 /** Parents deactivate a member who left — history is kept; they can't sign in. */
 /**
  * Parent resets another member's sign-in: a fresh temporary password is
- * emailed and the next sign-in forces choosing a real one. Parents reset
- * their own password with "Forgot password" on the sign-in page instead.
+ * emailed and the next sign-in forces choosing a real one. The family head
+ * can reset anyone; other parents can reset non-parent members. Everyone
+ * resets their own password with "Forgot password" on the sign-in page.
  */
 export async function resetMemberPassword(memberId: string) {
   const actor = await requireMember();
@@ -153,8 +154,11 @@ export async function resetMemberPassword(memberId: string) {
 
   const target = await db.member.findUnique({ where: { id: memberId } });
   if (!target || target.familyId !== actor.familyId) fail("Member not found.");
-  if (target.role === Role.PARENT) {
-    fail('Parents reset their own password with "Forgot password" on the sign-in page.');
+  if (target.id === actor.id) {
+    fail('Use "Forgot password" on the sign-in page for your own password.');
+  }
+  if (target.role === Role.PARENT && !actor.isHead) {
+    fail("Only the family head can reset a parent's password.");
   }
   if (target.deactivatedAt) fail("That member is no longer active.");
   if (!target.email) {
