@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireMember, isParent, parents } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { proposeChoreEdit, proposeChoreDelete } from "@/lib/actions/chore-changes";
+import { RateType } from "@/lib/types";
 import { buttonDanger, buttonPrimary, Card, ErrorBanner, inputClass } from "@/components/ui";
 
 export default async function EditChorePage({
@@ -20,6 +21,14 @@ export default async function EditChorePage({
   if (!chore || chore.familyId !== member.familyId || chore.deletedAt) notFound();
 
   const otherParents = parents(member).filter((p) => p.id !== member.id);
+  const amountLabel =
+    chore.rateType === RateType.HOURLY
+      ? "Rate ($ per hour)"
+      : chore.rateType === RateType.DAILY
+        ? "Rate ($ per day)"
+        : chore.rateType === RateType.WEEKLY
+          ? "Rate ($ per week)"
+          : "Amount ($)";
   const hint =
     otherParents.length === 0
       ? "You are the only parent, so changes apply immediately."
@@ -44,7 +53,7 @@ export default async function EditChorePage({
             <textarea id="details" name="details" rows={2} defaultValue={chore.details} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium" htmlFor="amount">Amount ($)</label>
+            <label className="mb-1 block text-sm font-medium" htmlFor="amount">{amountLabel}</label>
             <input
               id="amount"
               name="amount"

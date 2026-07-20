@@ -108,6 +108,15 @@ export default async function ChoresPage({
                       Claim
                     </button>
                   </form>
+                  {parent && (
+                    <Link
+                      href={`/chores/${assignment.choreId}/edit`}
+                      title="Edit chore (needs both parents)"
+                      className="rounded-full p-1.5 text-slate-500 hover:text-indigo-400"
+                    >
+                      <IconPencil className="h-4 w-4" />
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -166,6 +175,14 @@ export default async function ChoresPage({
                   >
                     Edit due / reminder
                   </Link>
+                  {parent && (
+                    <Link
+                      href={`/chores/${assignment.choreId}/edit`}
+                      className="rounded-lg px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5"
+                    >
+                      Edit chore (title / pay)
+                    </Link>
+                  )}
                   <Link
                     href={`/assignments/${assignment.id}/skip`}
                     className="rounded-lg px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5"
@@ -306,6 +323,15 @@ export default async function ChoresPage({
                         Take over
                       </button>
                     </form>
+                  )}
+                  {parent && (
+                    <Link
+                      href={`/chores/${assignment.choreId}/edit`}
+                      title="Edit chore (needs both parents)"
+                      className="rounded-full p-1.5 text-slate-500 hover:text-indigo-400"
+                    >
+                      <IconPencil className="h-4 w-4" />
+                    </Link>
                   )}
                 </li>
               ))}
